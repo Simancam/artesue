@@ -1,0 +1,191 @@
+{
+    "estates": [
+      {
+        "id": "est-001",
+        "title": "Lote Comercial en Zona Norte",
+        "location": "Av. Principal 123, Zona Norte, Bogotá D.C.",
+        "type": "Comercial",
+        "price": 250000000,
+        "isForRent": false,
+        "area": 1200,
+        "image": "/estates/commercial-lot-1.jpg",
+        "features": [
+          "Esquinero",
+          "Acceso pavimentado",
+          "Servicios completos",
+          "Zona comercial",
+          "Transporte público cercano",
+          "Vista panorámica"
+        ],
+        "description": "Excelente lote comercial ubicado en la zona norte de la ciudad, con gran flujo vehicular y peatonal. Ideal para desarrollo de locales comerciales, oficinas o centro comercial.",
+        "zoning": "Comercial",
+        "utilities": ["Agua", "Electricidad", "Alcantarillado", "Internet", "Gas"],
+        "agent": {
+          "name": "Carlos Rodríguez",
+          "phone": "+57 300 123 4567",
+          "email": "carlos@inmobiliaria.com"
+        },
+        "documents": ["Escritura", "Plano catastral", "Certificado de libertad"],
+        "coordinates": {
+          "lat": 4.6686,
+          "lng": -74.0521
+        },
+        "createdAt": "15/03/2024"
+      },
+      {
+        "id": "est-002",
+        "title": "Lote Residencial en Conjunto Cerrado",
+        "location": "Calle 45 #23-78, Laureles, Medellín",
+        "type": "Residencial",
+        "price": 180000000,
+        "isForRent": false,
+        "area": 500,
+        "image": "/estates/residential-lot-1.jpg",
+        "features": [
+          "Plano",
+          "Vista a la montaña",
+          "Conjunto cerrado",
+          "Vigilancia 24/7",
+          "Acceso pavimentado"
+        ],
+        "description": "Hermoso lote residencial en conjunto cerrado con vigilancia permanente. Excelente ubicación con vista a la montaña y acceso a todas las comodidades urbanas.",
+        "zoning": "Residencial",
+        "utilities": ["Agua", "Electricidad", "Alcantarillado", "Gas", "Fibra óptica"],
+        "agent": {
+          "name": "María López",
+          "phone": "+57 311 987 6543",
+          "email": "maria@inmobiliaria.com"
+        },
+        "documents": ["Escritura", "Plano catastral", "Reglamento del conjunto"],
+        "coordinates": {
+          "lat": 6.2518,
+          "lng": -75.5636
+        },
+        "createdAt": "22/02/2024"
+      },
+      {
+        "id": "est-003",
+        "title": "Bodega Industrial Zona Franca",
+        "location": "Km 7 Vía al Mar, Zona Franca, Barranquilla",
+        "type": "Industrial",
+        "price": 8500000,
+        "isForRent": true,
+        "area": 2500,
+        "image": "/estates/industrial-warehouse-1.jpg",
+        "features": [
+          "Altura 12m",
+          "Muelles de carga",
+          "Oficinas incorporadas",
+          "Parqueadero",
+          "Seguridad privada"
+        ],
+        "description": "Amplia bodega industrial ubicada en zona franca con beneficios tributarios. Cuenta con muelles de carga, oficinas y todas las facilidades para operación logística.",
+        "zoning": "Industrial",
+        "utilities": ["Agua industrial", "Electricidad trifásica", "Internet de alta velocidad", "Gas industrial"],
+        "agent": {
+          "name": "Alejandro Martínez",
+          "phone": "+57 315 456 7890",
+          "email": "alejandro@inmobiliaria.com"
+        },
+        "documents": ["Contrato de arrendamiento", "Licencia industrial", "Planos técnicos"],
+        "coordinates": {
+          "lat": 10.9639,
+          "lng": -74.7964
+        },
+        "createdAt": "05/04/2024"
+      },
+      {
+        "id": "est-004",
+        "title": "Lote para Desarrollo Turístico",
+        "location": "Vía al Mar Km 15, Santa Marta",
+        "type": "Comercial",
+        "price": 420000000,
+        "isForRent": false,
+        "area": 5000,
+        "image": "/estates/tourist-lot-1.jpg",
+        "features": [
+          "Frente al mar",
+          "Topografía plana",
+          "Servicios básicos",
+          "Acceso directo a playa",
+          "Vista panorámica"
+        ],
+        "description": "Excepcional lote con frente al mar, ideal para desarrollo turístico como hotel, resort o condominios. Ubicación privilegiada con acceso directo a playa privada.",
+        "zoning": "Turístico",
+        "utilities": ["Agua", "Electricidad", "Acceso vial pavimentado"],
+        "agent": {
+          "name": "Daniela Torres",
+          "phone": "+57 317 222 3344",
+          "email": "daniela@inmobiliaria.com"
+        },
+        "documents": ["Escritura", "Estudio ambiental", "Permiso de desarrollo turístico"],
+        "coordinates": {
+          "lat": 11.2274,
+          "lng": -74.1894
+        },
+        "createdAt": "10/01/2024"
+      },
+      {
+        "id": "est-005",
+        "title": "Local Comercial en Centro Histórico",
+        "location": "Calle de la Universidad #5-27, Centro, Cartagena",
+        "type": "Comercial",
+        "price": 3800000,
+        "isForRent": true,
+        "area": 85,
+        "image": "/estates/commercial-local-1.jpg",
+        "features": [
+          "Ubicación turística",
+          "Alto tráfico peatonal",
+          "Fachada colonial",
+          "Baño privado",
+          "Aire acondicionado"
+        ],
+        "description": "Local comercial en pleno corazón del centro histórico de Cartagena. Ideal para tienda de souvenirs, restaurante o boutique. Excelente visibilidad y flujo constante de turistas.",
+        "zoning": "Comercial/Turístico",
+        "utilities": ["Agua", "Electricidad", "Internet", "Gas"],
+        "agent": {
+          "name": "Roberto Gómez",
+          "phone": "+57 310 555 6677",
+          "email": "roberto@inmobiliaria.com"
+        },
+        "documents": ["Contrato de arrendamiento", "Licencia comercial"],
+        "coordinates": {
+          "lat": 10.4217,
+          "lng": -75.5493
+        },
+        "createdAt": "18/03/2024"
+      },
+      {
+        "id": "est-006",
+        "title": "Terreno Agrícola para Cultivos",
+        "location": "Vereda El Porvenir, Km 8 Vía Oriental, Villavicencio",
+        "type": "Agrícola",
+        "price": 320000000,
+        "isForRent": false,
+        "area": 15000,
+        "image": "/estates/agricultural-land-1.jpg",
+        "features": [
+          "Terreno fértil",
+          "Fuente de agua natural",
+          "Vía de acceso",
+          "Casa de mayordomo",
+          "Bodega"
+        ],
+        "description": "Excelente terreno agrícola con suelo fértil y disponibilidad de agua durante todo el año. Ideal para cultivos de palma, arroz o ganadería. Incluye casa para trabajadores y bodega para insumos.",
+        "zoning": "Rural/Agrícola",
+        "utilities": ["Pozo profundo", "Electricidad rural", "Acceso vial"],
+        "agent": {
+          "name": "Fernando Ospina",
+          "phone": "+57 312 888 9900",
+          "email": "fernando@inmobiliaria.com"
+        },
+        "documents": ["Escritura", "Estudio de suelos", "Certificado de tradición"],
+        "coordinates": {
+          "lat": 4.1254,
+          "lng": -73.6346
+        },
+        "createdAt": "05/02/2024"
+      }
+    ]
+  }
