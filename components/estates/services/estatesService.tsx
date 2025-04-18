@@ -1,113 +1,146 @@
-import estatesData from '@/data/estates-data.json';
+import estatesData from "@/data/estates-data.json"
 
 export interface IEstate {
-  id: string;
-  title: string;
-  location: string;
-  type: string;
-  price: number;
-  isForRent: boolean;
-  area: number;
-  image: string;
-  features: string[];
-  description?: string;
-  zoning?: string;
-  utilities?: string[];
+  id: string
+  title: string
+  location: string
+  type: string
+  price: number
+  isForRent: boolean
+  area: number
+  image?: string
+  images?: string[] 
+  videoUrl?: string 
+  features: string[]
+  description?: string
+  zoning?: string
+  utilities?: string[]
   agent?: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-  documents?: string[];
+    name: string
+    phone: string
+    email: string
+  }
+  documents?: string[]
   coordinates?: {
-    lat: number;
-    lng: number;
-  };
-  createdAt?: string;
+    lat: number
+    lng: number
+  }
+  createdAt?: string
 }
 
-const API_BASE_URL = '/api/estates';
+const API_BASE_URL = "/api/estates"
 
 export class EstatesService {
   static async getAllEstates(): Promise<IEstate[]> {
-    return Promise.resolve(estatesData.estates);
+    // Aseguramos compatibilidad con el nuevo formato de datos
+    const estates = estatesData.estates.map((estate) => {
+      // Si la propiedad tiene una imagen pero no un array de imágenes,
+      // creamos el array con esa única imagen para compatibilidad
+      if (!estate.images || estate.images.length === 0) {
+        return {
+          ...estate,
+          images: ["/default-image.jpg"],
+        }
+      }
+      return estate
+    })
+
+    return Promise.resolve(estates)
   }
 
   static async getEstateById(id: string): Promise<IEstate | undefined> {
-    const all = await this.getAllEstates();
-    return all.find(e => e.id === id);
+    const all = await this.getAllEstates()
+    return all.find((e) => e.id === id)
   }
 
-  static async createEstate(estateData: Omit<IEstate, 'id'>): Promise<IEstate> {
+  static async createEstate(estateData: Omit<IEstate, "id">): Promise<IEstate> {
+    // Aseguramos que si se proporciona una imagen pero no imágenes,
+    // se cree el array de imágenes con esa única imagen
+    const dataWithImages = { ...estateData }
+    if (dataWithImages.image && !dataWithImages.images) {
+      dataWithImages.images = [dataWithImages.image]
+    }
+
     const newEstate = {
-      ...estateData,
+      ...dataWithImages,
       id: `tmp-${Date.now()}`,
       createdAt: new Date().toISOString(),
-    } as IEstate;
-    return Promise.resolve(newEstate);
+    } as IEstate
+
+    return Promise.resolve(newEstate)
   }
 
   static async updateEstate(id: string, estateData: Partial<IEstate>): Promise<IEstate> {
-    const all = await this.getAllEstates();
-    const existing = all.find(e => e.id === id);
-    if (!existing) throw new Error(`No existe propiedad con ID ${id}`);
-    return Promise.resolve({ ...existing, ...estateData });
+    const all = await this.getAllEstates()
+    const existing = all.find((e) => e.id === id)
+    if (!existing) throw new Error(`No existe propiedad con ID ${id}`)
+
+    // Manejo especial para la actualización de imágenes
+    const updatedData = { ...estateData }
+
+    // Si se actualiza la imagen pero no las imágenes, actualizamos también el array
+    if (updatedData.image && !updatedData.images) {
+      updatedData.images = [updatedData.image]
+    }
+
+    // Si se actualizan las imágenes pero no la imagen, actualizamos la imagen principal
+    if (updatedData.images?.length && !updatedData.image) {
+      updatedData.image = updatedData.images[0]
+    }
+
+    return Promise.resolve({ ...existing, ...updatedData })
   }
 
   static async deleteEstate(id: string): Promise<void> {
-    const all = await this.getAllEstates();
-    if (!all.some(e => e.id === id)) throw new Error(`No existe propiedad con ID ${id}`);
-    return Promise.resolve();
+    const all = await this.getAllEstates()
+    if (!all.some((e) => e.id === id)) throw new Error(`No existe propiedad con ID ${id}`)
+    return Promise.resolve()
   }
 
   /**
    * Simula un endpoint GET /estates?…query
    */
   static async filterEstates(filters: {
-    transactionType?: string;
-    city?: string;
-    propertyType?: string;
-    minArea?: number;
-    maxArea?: number;
-    minPrice?: number;
-    maxPrice?: number;
+    transactionType?: string
+    city?: string
+    propertyType?: string
+    minArea?: number
+    maxArea?: number
+    minPrice?: number
+    maxPrice?: number
   }): Promise<IEstate[]> {
-    const all = await this.getAllEstates();
+    const all = await this.getAllEstates()
     // Normalizamos cadenas para comparar sin distinción de mayúsculas ni tildes
     const normalize = (s: string) =>
       s
         .toLowerCase()
-        .normalize('NFD')
-        .replace(/[̀-\u036f]/g, '');
+        .normalize("NFD")
+        .replace(/[̀-\u036f]/g, "")
 
-    return all.filter(estate => {
+    return all.filter((estate) => {
       // 1) transactionType (rent vs buy)
       if (filters.transactionType) {
-        const isRent = filters.transactionType === 'rent';
-        if (estate.isForRent !== isRent) return false;
+        const isRent = filters.transactionType === "rent"
+        if (estate.isForRent !== isRent) return false
       }
 
       // 2) city: coincidencia parcial normalizada
       if (filters.city) {
-        if (
-          !normalize(estate.location).includes(
-            normalize(filters.city)
-          )
-        ) return false;
+        if (!normalize(estate.location).includes(normalize(filters.city))) return false
       }
 
       // 3) propertyType
-      if (filters.propertyType && estate.type !== filters.propertyType) return false;
+      if (filters.propertyType && estate.type !== filters.propertyType) return false
 
       // 4) area
-      if (filters.minArea != null && estate.area < filters.minArea) return false;
-      if (filters.maxArea != null && estate.area > filters.maxArea) return false;
+      if (filters.minArea != null && estate.area < filters.minArea) return false
+      if (filters.maxArea != null && estate.area > filters.maxArea) return false
 
       // 5) price
-      if (filters.minPrice != null && estate.price < filters.minPrice) return false;
-      if (filters.maxPrice != null && estate.price > filters.maxPrice) return false;
+      if (filters.minPrice != null && estate.price < filters.minPrice) return false
+      if (filters.maxPrice != null && estate.price > filters.maxPrice) return false
 
-      return true;
-    });
+      return true
+    })
   }
 }

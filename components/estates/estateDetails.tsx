@@ -1,11 +1,12 @@
 "use client";
 
-import { Calendar, MapPin, Phone, User } from "lucide-react";
+import { Calendar, MapPin, Phone, User, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IEstate } from "./services/estatesService";
+import type { IEstate } from "./services/estatesService";
+import { EstateCarousel } from "./estatesCarousel";
 
 interface IEstateDetailsProps {
   estate: IEstate;
@@ -17,13 +18,44 @@ interface IEstateDetailsProps {
  */
 export function EstateDetails({ estate }: IEstateDetailsProps) {
   // Valores por defecto para propiedades opcionales
-  const defaultUtilities = ["Agua", "Electricidad", "Alcantarillado", "Internet"];
-  const defaultDocuments = ["Escritura", "Plano catastral", "Certificado de libertad"];
-  const defaultFeatures = [
-    "Esquinero", "Plano", "Acceso pavimentado", "Cerca a vía principal",
-    "Servicios completos", "Zona comercial", "Transporte público cercano", 
-    "Vista panorámica"
+  const defaultUtilities = [
+    "Agua",
+    "Electricidad",
+    "Alcantarillado",
+    "Internet",
   ];
+  const defaultDocuments = [
+    "Escritura",
+    "Plano catastral",
+    "Certificado de libertad",
+  ];
+  const defaultFeatures = [
+    "Esquinero",
+    "Plano",
+    "Acceso pavimentado",
+    "Cerca a vía principal",
+    "Servicios completos",
+    "Zona comercial",
+    "Transporte público cercano",
+    "Vista panorámica",
+  ];
+
+  /**
+   * Obtiene las imágenes para el carrusel, manteniendo compatibilidad con la estructura anterior
+   */
+  const getImages = (): string[] => {
+    if (estate.images && estate.images.length > 0) {
+      return estate.images;
+    }
+    if (estate.image) {
+      return [estate.image];
+    }
+    return [
+      `/placeholder.svg?height=400&width=700&text=${encodeURIComponent(
+        estate.type
+      )}`,
+    ];
+  };
 
   /**
    * Renderiza la información básica de la propiedad
@@ -38,19 +70,14 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
         </div>
       </div>
 
-      <div className="relative aspect-video overflow-hidden rounded-lg">
-        <img
-          src={estate.image || "/placeholder.svg?height=400&width=700"}
-          alt={estate.title}
-          className="h-full w-full object-cover"
-        />
-        <Badge
-          className="absolute right-2 top-2"
-          variant={estate.isForRent ? "secondary" : "default"}
-        >
-          {estate.isForRent ? "En Arriendo" : "En Venta"}
-        </Badge>
-      </div>
+      {/* Carrusel de imágenes */}
+      <EstateCarousel
+        images={getImages()}
+        showBadge={true}
+        isForRent={estate.isForRent}
+        className="w-full h-[400px]"
+        imageContainerClassName="h-[400px]" // altura grande para detalle
+      />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-lg border p-3">
@@ -91,16 +118,35 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
   const renderDetailsTab = () => (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium">Descripción</h3>
+        <h3 className="text-lg font-bold">Descripción</h3>
         <p className="mt-2 text-muted-foreground">
           {estate.description ||
             "Excelente lote ubicado en una zona estratégica con gran potencial de desarrollo. Ideal para proyectos residenciales o comerciales. Cuenta con todos los servicios básicos y excelente accesibilidad."}
         </p>
       </div>
 
+      {/* Video de la propiedad */}
+      {estate.videoUrl && (
+        <div>
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Video className="h-5 w-5" />
+            Video de la Propiedad
+          </h3>
+          <div className="mt-2 aspect-video w-full overflow-hidden rounded-lg">
+            <iframe
+              src={estate.videoUrl}
+              title="Video de la propiedad"
+              className="h-full w-full"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            ></iframe>
+          </div>
+        </div>
+      )}
+
       {estate.utilities && (
         <div>
-          <h3 className="text-lg font-medium">Servicios</h3>
+          <h3 className="text-lg font-bold">Servicios</h3>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {(estate.utilities || defaultUtilities).map((utility, index) => (
               <div key={index} className="flex items-center">
@@ -170,9 +216,7 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
             <h3 className="font-medium">
               {estate.agent?.name || "Carlos Rodríguez"}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Agente Inmobiliario
-            </p>
+            <p className="text-sm text-muted-foreground">Agente Inmobiliario</p>
           </div>
         </div>
         <Separator className="my-4" />
@@ -207,15 +251,15 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
           <TabsTrigger value="features">Características</TabsTrigger>
           <TabsTrigger value="contact">Contacto</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="details" className="mt-4">
           {renderDetailsTab()}
         </TabsContent>
-        
+
         <TabsContent value="features" className="mt-4">
           {renderFeaturesTab()}
         </TabsContent>
-        
+
         <TabsContent value="contact" className="mt-4">
           {renderContactTab()}
         </TabsContent>

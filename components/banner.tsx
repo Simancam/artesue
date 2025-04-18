@@ -3,11 +3,17 @@ import Image from "next/image";
 
 interface BannerProps {
   imageUrl: string;
-  height?: string; // puedes ajustar el alto con props si deseas
+  height?: string;
+  overlayOpacity?: number;
   children?: React.ReactNode;
 }
 
-const Banner: React.FC<BannerProps> = ({ imageUrl, height = "60vh", children }) => {
+const Banner: React.FC<BannerProps> = ({
+  imageUrl,
+  height = "60vh",
+  overlayOpacity = 0.4,
+  children,
+}) => {
   return (
     <div className="relative w-full" style={{ height }}>
       {/* Imagen de fondo */}
@@ -20,10 +26,11 @@ const Banner: React.FC<BannerProps> = ({ imageUrl, height = "60vh", children }) 
         priority
       />
 
-      {/* Capa oscura encima de la imagen */}
-      <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
+      <div 
+        className="absolute inset-0 z-10" 
+        style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }}
+      />
 
-      {/* Contenido encima del banner */}
       <div className="absolute inset-0 z-20 flex items-center justify-center text-white">
         {children}
       </div>

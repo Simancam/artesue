@@ -1,18 +1,16 @@
 "use client"
-
-import React from "react"
-import { JSX } from "react"
+import type { JSX } from "react"
 import { Eye, MapPin, Ruler } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { EstateDetails } from "./estateDetails"
-import { IEstate } from "./services/estatesService"
+import type { IEstate } from "./services/estatesService"
+import { EstateCarousel } from "./estatesCarousel"
 
 interface IEstateCardProps {
-  estate: IEstate;
+  estate: IEstate
 }
 
 /**
@@ -20,14 +18,17 @@ interface IEstateCardProps {
  */
 export function EstateCard({ estate }: IEstateCardProps) {
   /**
-   * Procesa la URL de la imagen para manejar diferentes formatos de ruta
+   * Obtiene las imágenes para el carrusel, manteniendo compatibilidad con la estructura anterior
    */
-  const getImageUrl = (imageUrl: string): string => {
-    if (imageUrl.startsWith('/estates/')) {
-      return `/placeholder.svg?height=192&width=384&text=${encodeURIComponent(estate.type)}`;
+  const getImages = (): string[] => {
+    if (estate.images && estate.images.length > 0) {
+      return estate.images
     }
-    return imageUrl;
-  };
+    if (estate.image) {
+      return [estate.image]
+    }
+    return [`/placeholder.svg?height=192&width=384&text=${encodeURIComponent(estate.type)}`]
+  }
 
   /**
    * Renderiza los badges de características con un límite máximo visible
@@ -39,11 +40,9 @@ export function EstateCard({ estate }: IEstateCardProps) {
           {feature}
         </Badge>
       ))}
-      {features.length > maxVisible && (
-        <Badge variant="outline">+{features.length - maxVisible}</Badge>
-      )}
+      {features.length > maxVisible && <Badge variant="outline">+{features.length - maxVisible}</Badge>}
     </div>
-  );
+  )
 
   /**
    * Formatea el precio con separadores de miles y texto adicional si es renta
@@ -53,36 +52,24 @@ export function EstateCard({ estate }: IEstateCardProps) {
       ${price.toLocaleString()}
       {isRent && <span className="text-sm font-normal text-muted-foreground"> /mes</span>}
     </p>
-  );
+  )
 
   return (
-    <Card className="overflow-hidden">
-      {/* Sección de imagen y badge de tipo de transacción */}
-      <div className="relative h-48 w-full">
-        <img
-          src={getImageUrl(estate.image)}
-          alt={estate.title}
-          className="h-full w-full object-cover"
-        />
-        <Badge 
-          className="absolute right-2 top-2" 
-          variant={estate.isForRent ? "secondary" : "default"}
-        >
-          {estate.isForRent ? "En Arriendo" : "En Venta"}
-        </Badge>
-      </div>
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-col">
+      {/* Sección de carrusel de imágenes con badge de tipo de transacción */}
+      <EstateCarousel images={getImages()} showBadge={true} isForRent={estate.isForRent} className="h-48 w-full" />
 
       {/* Encabezado con título y ubicación */}
-      <CardHeader className="p-4">
-        <CardTitle className="line-clamp-1 text-xl">{estate.title}</CardTitle>
+      <div className="flex flex-col space-y-1.5 p-4 pb-0">
+        <h3 className="text-xl font-semibold leading-none tracking-tight line-clamp-1">{estate.title}</h3>
         <div className="flex items-center text-sm text-muted-foreground">
           <MapPin className="mr-1 h-4 w-4" />
           <span className="line-clamp-1">{estate.location}</span>
         </div>
-      </CardHeader>
+      </div>
 
       {/* Contenido principal con detalles básicos y precio */}
-      <CardContent className="p-4 pt-0">
+      <div className="p-4 pt-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
             <p className="text-sm font-medium">Tipo</p>
@@ -96,9 +83,9 @@ export function EstateCard({ estate }: IEstateCardProps) {
             </div>
           </div>
         </div>
-        
+
         <Separator className="my-4" />
-        
+
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-sm font-medium">Precio</p>
@@ -112,17 +99,15 @@ export function EstateCard({ estate }: IEstateCardProps) {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[700px]">
-              <DialogTitle>Detalles de la Propiedad</DialogTitle>
+              <DialogTitle>Artesue</DialogTitle>
               <EstateDetails estate={estate} />
             </DialogContent>
           </Dialog>
         </div>
-      </CardContent>
+      </div>
 
       {/* Pie de tarjeta con badges de características */}
-      <CardFooter className="flex justify-between p-4 pt-0">
-        {renderFeatureBadges(estate.features)}
-      </CardFooter>
-    </Card>
+      <div className="flex justify-between p-4 pt-0 mt-auto">{renderFeatureBadges(estate.features)}</div>
+    </div>
   )
 }

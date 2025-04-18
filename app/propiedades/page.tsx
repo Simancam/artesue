@@ -1,12 +1,15 @@
-// app/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import EstatesFilter from "@/components/estates/estatesFilter";
 import { EstateCard } from "@/components/estates/estateCard";
 import Banner from "@/components/banner";
-import { EstatesService, IEstate } from "@/components/estates/services/estatesService";
+import {
+  EstatesService,
+  IEstate,
+} from "@/components/estates/services/estatesService";
 
 const Propiedades = () => {
   const [estates, setEstates] = useState<IEstate[]>([]);
@@ -79,11 +82,18 @@ const Propiedades = () => {
               <h3 className="text-xl font-medium text-gray-500">
                 No se encontraron propiedades con los filtros aplicados
               </h3>
-              <p className="mt-2 text-gray-400">Intenta ajustar los criterios de búsqueda</p>
+              <p className="mt-2 text-gray-400">
+                Intenta ajustar los criterios de búsqueda
+              </p>
             </div>
           )}
         </div>
       </section>
+      <Footer
+        companyName="Artesue"
+        logoUrl="/file.svg"
+        simancaUrl="https://youtube.com"
+      />
     </>
   );
 };
