@@ -89,11 +89,7 @@ const Propiedades = () => {
           )}
         </div>
       </section>
-      <Footer
-        companyName="Artesue"
-        logoUrl="/file.svg"
-        simancaUrl="https://youtube.com"
-      />
+      <Footer/>
     </>
   );
 };

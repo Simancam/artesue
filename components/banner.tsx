@@ -16,7 +16,6 @@ const Banner: React.FC<BannerProps> = ({
 }) => {
   return (
     <div className="relative w-full" style={{ height }}>
-      {/* Imagen de fondo */}
       <Image
         src={imageUrl}
         alt="Banner"

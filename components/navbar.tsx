@@ -34,7 +34,6 @@ const Navbar = () => {
           </span>
         </a>
 
-        {/* Button to toggle menu */}
         <button
           onClick={toggleMenu}
           type="button"
@@ -59,7 +58,6 @@ const Navbar = () => {
           </svg>
         </button>
 
-        {/* Menú para escritorio - siempre visible en md y superior */}
         <div className="hidden md:block w-auto">
           <ul className="font-medium flex flex-row space-x-8">
             {navItems.map((item, index) => (
@@ -80,7 +78,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Menú móvil con animación fade elegante */}
       <div
         className={`absolute top-full left-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 md:hidden transition-all duration-500 ease-in-out ${
           isOpen 
