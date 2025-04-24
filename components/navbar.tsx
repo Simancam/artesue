@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900 relative z-50">
       <div className="max-w-screen-xl mx-auto p-4 flex flex-wrap items-center justify-between">
-        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <Link href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
           <Image
             src="/file.svg"
             alt="Artesue Logo"
@@ -32,7 +33,7 @@ const Navbar = () => {
           <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
             Artesue
           </span>
-        </a>
+        </Link>
 
         <button
           onClick={toggleMenu}
@@ -62,7 +63,7 @@ const Navbar = () => {
           <ul className="font-medium flex flex-row space-x-8">
             {navItems.map((item, index) => (
               <li key={index}>
-                <a 
+                <Link 
                   href={item.href} 
                   className={`${
                     item.active 
@@ -71,7 +72,7 @@ const Navbar = () => {
                   } transition-colors duration-300`}
                 >
                   {item.text}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -88,7 +89,7 @@ const Navbar = () => {
         <ul className="flex flex-col p-4 space-y-2">
           {navItems.map((item, index) => (
             <li key={index} className={`transition-all duration-300 ease-in-out ${isOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`} style={{ transitionDelay: `${index * 75}ms` }}>
-              <a 
+              <Link 
                 href={item.href} 
                 className={`block py-2 px-3 rounded ${
                   item.active 
@@ -97,7 +98,7 @@ const Navbar = () => {
                 } transition-colors duration-300`}
               >
                 {item.text}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

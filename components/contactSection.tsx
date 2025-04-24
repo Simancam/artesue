@@ -5,14 +5,10 @@ import {
   Phone,
   MapPin,
   Clock,
-  Instagram,
-  Twitter,
-  Youtube,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Footer from '@/components/footer';
 
 export const ContactSection = () => {
   return (

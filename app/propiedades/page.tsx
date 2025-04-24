@@ -11,6 +11,17 @@ import {
   IEstate,
 } from "@/components/estates/services/estatesService";
 
+// Define la interfaz ProcessedFilters localmente si no está exportada desde EstatesFilter
+interface ProcessedFilters {
+  transactionType?: string;
+  city?: string;
+  minArea?: number;
+  maxArea?: number;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 const Propiedades = () => {
   const [estates, setEstates] = useState<IEstate[]>([]);
   const [filteredEstates, setFilteredEstates] = useState<IEstate[]>([]);
@@ -30,7 +41,7 @@ const Propiedades = () => {
     })();
   }, []);
 
-  const handleFilterChange = async (filters: any) => {
+  const handleFilterChange = async (filters: ProcessedFilters) => {
     if (Object.keys(filters).length === 0) {
       setFilteredEstates(estates);
     } else {

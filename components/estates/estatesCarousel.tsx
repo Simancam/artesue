@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
@@ -20,24 +21,24 @@ interface EstateCarouselProps {
   imageContainerClassName?: string;
 }
 
+interface CarouselSelectEvent extends React.SyntheticEvent {
+  target: HTMLElement & {
+    dataset: {
+      index: number;
+    };
+  };
+}
+
 export function EstateCarousel({
   images,
   showBadge = false,
   isForRent = false,
   className = "",
-  aspectRatio = "video",
   showIndicators = true,
   imageContainerClassName = "h-48", 
 }: EstateCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const aspectRatioClass =
-    aspectRatio === "video"
-      ? "aspect-video"
-      : aspectRatio === "square"
-      ? "aspect-square"
-      : "";
-
+  
   const imageUrls =
     images && images.length > 0
       ? images
@@ -48,16 +49,16 @@ export function EstateCarousel({
       <Carousel
         className="w-full h-full"
         onSelect={(event: React.SyntheticEvent) =>
-          setCurrentIndex((event.target as any).dataset.index)
+          setCurrentIndex((event.target as CarouselSelectEvent["target"]).dataset.index)
         }
       >
         <CarouselContent className="h-full">
           {imageUrls.map((image, index) => (
             <CarouselItem key={index} className="h-full">
               <div
-                className={`${imageContainerClassName} w-full overflow-hidden`}
+                className={`${imageContainerClassName} w-full overflow-hidden relative`}
               >
-                <img
+                <Image
                   src={
                     image.startsWith("/estates/")
                       ? `/placeholder.svg?height=400&width=700&text=${encodeURIComponent(
@@ -66,7 +67,9 @@ export function EstateCarousel({
                       : image
                   }
                   alt={`Imagen ${index + 1}`}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
             </CarouselItem>
@@ -96,7 +99,7 @@ export function EstateCarousel({
             <div
               key={index}
               className={`h-1.5 w-1.5 rounded-full ${
-                index === currentIndex ? "bg-white" : "bg-white/50"
+                index === Number(currentIndex) ? "bg-white" : "bg-white/50"
               }`}
             />
           ))}

@@ -28,7 +28,7 @@ export interface IEstate {
   createdAt?: string
 }
 
-const API_BASE_URL = "/api/estates"
+//const API_BASE_URL = "/api/estates"
 
 export class EstatesService {
   static async getAllEstates(): Promise<IEstate[]> {
