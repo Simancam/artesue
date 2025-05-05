@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 
-// Componentes auxiliares para reducir la complejidad
 const TagInput = ({ 
   value, 
   onChange, 
@@ -167,7 +166,6 @@ export function PropertyForm({ onSuccess, onError }: PropertyFormProps) {
     }
   }
 
-  // Componentes de pestañas
   const BasicInfoTab = () => (
     <TabsContent value="basic" className="space-y-4 h-full">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
