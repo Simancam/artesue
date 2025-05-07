@@ -4,7 +4,7 @@ import { createContext, useContext, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { AuthService } from '@/components/login/services/authService';
+import { AuthService } from '@/services/authServices/authService';
 
 interface AuthContextType {
   user: User | null;
