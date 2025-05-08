@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { EstateDetails } from "./estateDetails"
-import type { IEstate } from "./services/estatesService"
+import type { IEstate } from "../../services/estatesService"
 import { EstateCarousel } from "./estatesCarousel"
 
 interface IEstateCardProps {

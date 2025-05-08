@@ -9,7 +9,7 @@ import Banner from "@/components/banner";
 import {
   EstatesService,
   IEstate,
-} from "@/components/estates/services/estatesService";
+} from "@/services/estatesService";
 
 interface ProcessedFilters {
   transactionType?: string;
