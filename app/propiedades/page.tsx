@@ -11,7 +11,6 @@ import {
   IEstate,
 } from "@/components/estates/services/estatesService";
 
-// Define la interfaz ProcessedFilters localmente si no está exportada desde EstatesFilter
 interface ProcessedFilters {
   transactionType?: string;
   city?: string;

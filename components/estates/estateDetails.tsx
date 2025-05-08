@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin, Phone, User, Video } from "lucide-react";
+import { Calendar, MapPin, Phone, User, Video, Home, Droplets, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -63,7 +63,12 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
   const renderPropertyOverview = () => (
     <>
       <div>
-        <h2 className="text-2xl font-bold">{estate.title}</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">{estate.title}</h2>
+          <Badge variant="outline" className="text-sm">
+            <Tag className="h-4 w-4 mr-1" /> {estate.propertyCode}
+          </Badge>
+        </div>
         <div className="mt-1 flex items-center text-muted-foreground">
           <MapPin className="mr-1 h-4 w-4" />
           <span>{estate.location}</span>
@@ -107,6 +112,30 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
           <p className="text-lg font-medium">
             {estate.zoning || "Residencial"}
           </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 mt-4">
+        <div className="rounded-lg border p-3">
+          <p className="text-sm text-muted-foreground">Habitaciones</p>
+          <div className="flex items-center text-lg font-medium">
+            <Home className="mr-1 h-4 w-4" />
+            <span>{estate.bedrooms}</span>
+          </div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <p className="text-sm text-muted-foreground">Baños</p>
+          <div className="flex items-center text-lg font-medium">
+            <Droplets className="mr-1 h-4 w-4" />
+            <span>{estate.bathrooms}</span>
+          </div>
+        </div>
+        <div className="rounded-lg border p-3 sm:col-span-1">
+          <p className="text-sm text-muted-foreground">Código</p>
+          <div className="flex items-center text-lg font-medium">
+            <Tag className="mr-1 h-4 w-4" />
+            <span>{estate.propertyCode}</span>
+          </div>
         </div>
       </div>
     </>

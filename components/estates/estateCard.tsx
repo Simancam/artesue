@@ -1,6 +1,6 @@
 "use client"
 import type { JSX } from "react"
-import { Eye, MapPin, Ruler } from "lucide-react"
+import { Eye, MapPin, Ruler, Home, Droplets, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -61,7 +61,12 @@ export function EstateCard({ estate }: IEstateCardProps) {
 
       {/* Encabezado con título y ubicación */}
       <div className="flex flex-col space-y-1.5 p-4 pb-0">
-        <h3 className="text-xl font-semibold leading-none tracking-tight line-clamp-1">{estate.title}</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold leading-none tracking-tight line-clamp-1">{estate.title}</h3>
+          <Badge variant="outline" className="text-xs">
+            <Tag className="h-3 w-3 mr-1" /> {estate.propertyCode}
+          </Badge>
+        </div>
         <div className="flex items-center text-sm text-muted-foreground">
           <MapPin className="mr-1 h-4 w-4" />
           <span className="line-clamp-1">{estate.location}</span>
@@ -70,7 +75,7 @@ export function EstateCard({ estate }: IEstateCardProps) {
 
       {/* Contenido principal con detalles básicos y precio */}
       <div className="p-4 pt-2">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mb-2">
           <div>
             <p className="text-sm font-medium">Tipo</p>
             <p className="text-sm text-muted-foreground">{estate.type}</p>
@@ -80,6 +85,23 @@ export function EstateCard({ estate }: IEstateCardProps) {
             <div className="flex items-center text-sm text-muted-foreground">
               <Ruler className="mr-1 h-4 w-4" />
               <span>{estate.area} m²</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-sm font-medium">Habitaciones</p>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Home className="mr-1 h-4 w-4" />
+              <span>{estate.bedrooms}</span>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Baños</p>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Droplets className="mr-1 h-4 w-4" />
+              <span>{estate.bathrooms}</span>
             </div>
           </div>
         </div>

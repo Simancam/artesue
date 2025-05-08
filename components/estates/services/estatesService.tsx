@@ -25,6 +25,10 @@ export interface IEstate {
     lat: number
     lng: number
   }
+  // Nuevas propiedades añadidas
+  bedrooms?: number
+  bathrooms?: number
+  propertyCode?: string
   createdAt?: string
 }
 
@@ -64,6 +68,8 @@ export class EstatesService {
     const newEstate = {
       ...dataWithImages,
       id: `tmp-${Date.now()}`,
+      // Si no se proporciona código de propiedad, generamos uno
+      propertyCode: dataWithImages.propertyCode || `PROP-${Date.now().toString().substring(7)}`,
       createdAt: new Date().toISOString(),
     } as IEstate
 
@@ -108,6 +114,11 @@ export class EstatesService {
     maxArea?: number
     minPrice?: number
     maxPrice?: number
+    minBedrooms?: number
+    maxBedrooms?: number
+    minBathrooms?: number
+    maxBathrooms?: number
+    propertyCode?: string
   }): Promise<IEstate[]> {
     const all = await this.getAllEstates()
     // Normalizamos cadenas para comparar sin distinción de mayúsculas ni tildes
@@ -139,6 +150,17 @@ export class EstatesService {
       // 5) price
       if (filters.minPrice != null && estate.price < filters.minPrice) return false
       if (filters.maxPrice != null && estate.price > filters.maxPrice) return false
+      
+      // 6) nuevos filtros: habitaciones
+      if (filters.minBedrooms != null && (estate.bedrooms === undefined || estate.bedrooms < filters.minBedrooms)) return false
+      if (filters.maxBedrooms != null && (estate.bedrooms === undefined || estate.bedrooms > filters.maxBedrooms)) return false
+      
+      // 7) nuevos filtros: baños
+      if (filters.minBathrooms != null && (estate.bathrooms === undefined || estate.bathrooms < filters.minBathrooms)) return false
+      if (filters.maxBathrooms != null && (estate.bathrooms === undefined || estate.bathrooms > filters.maxBathrooms)) return false
+      
+      // 8) código de propiedad (búsqueda exacta)
+      if (filters.propertyCode && estate.propertyCode !== filters.propertyCode) return false
 
       return true
     })
