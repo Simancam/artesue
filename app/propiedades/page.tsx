@@ -314,7 +314,7 @@ const Propiedades = () => {
           ) : filteredEstates.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredEstates.map((estate) => (
-                <EstateCard key={estate.id} estate={estate} />
+                <EstateCard key={estate.id} estate={estate} onClick={() => handleEstateClick(estate.id)} />
               ))}
             </div>
           ) : (

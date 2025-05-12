@@ -4,11 +4,10 @@ import type { JSX } from "react"
 import { Eye, MapPin, Ruler, Home, Droplets, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { EstateDetails } from "./estateDetails"
 import { EstateCarousel } from "./estatesCarousel"
 import { EstatesService, type IEstate } from "@/services/estatesService"
+import Link from "next/link"
 
 /**
  * Component that displays a grid of estate cards
@@ -122,12 +121,13 @@ export function EstateGrid() {
 
 interface IEstateCardProps {
   estate: IEstate
+  onClick?: (id: string) => void
 }
 
 /**
  * Component that displays a card with summary information about a real estate property
  */
-export function EstateCard({ estate }: IEstateCardProps) {
+export function EstateCard({ estate, onClick }: IEstateCardProps) {
   /**
    * Gets images for the carousel, maintaining compatibility with the previous structure
    */
@@ -161,7 +161,7 @@ export function EstateCard({ estate }: IEstateCardProps) {
   const formatPrice = (price: number, isRent: boolean): JSX.Element => (
     <p className="text-xl font-bold">
       ${price.toLocaleString()}
-      {isRent && <span className="text-sm font-normal text-muted-foreground"> /month</span>}
+      {isRent && <span className="text-sm font-normal text-muted-foreground"> /mes</span>}
     </p>
   )
 
@@ -188,11 +188,11 @@ export function EstateCard({ estate }: IEstateCardProps) {
       <div className="p-4 pt-2">
         <div className="grid grid-cols-2 gap-2 mb-2">
           <div>
-            <p className="text-sm font-medium">Type</p>
+            <p className="text-sm font-medium">Tipo</p>
             <p className="text-sm text-muted-foreground">{estate.type}</p>
           </div>
           <div>
-            <p className="text-sm font-medium">Area</p>
+            <p className="text-sm font-medium">Área</p>
             <div className="flex items-center text-sm text-muted-foreground">
               <Ruler className="mr-1 h-4 w-4" />
               <span>{estate.area} m²</span>
@@ -202,14 +202,14 @@ export function EstateCard({ estate }: IEstateCardProps) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <p className="text-sm font-medium">Bedrooms</p>
+            <p className="text-sm font-medium">Habitaciones</p>
             <div className="flex items-center text-sm text-muted-foreground">
               <Home className="mr-1 h-4 w-4" />
               <span>{estate.bedrooms}</span>
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium">Bathrooms</p>
+            <p className="text-sm font-medium">Baños</p>
             <div className="flex items-center text-sm text-muted-foreground">
               <Droplets className="mr-1 h-4 w-4" />
               <span>{estate.bathrooms}</span>
@@ -221,21 +221,15 @@ export function EstateCard({ estate }: IEstateCardProps) {
 
         <div className="flex items-baseline justify-between">
           <div>
-            <p className="text-sm font-medium">Price</p>
+            <p className="text-sm font-medium">Precio</p>
             {formatPrice(estate.price, estate.isForRent)}
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[700px]">
-              <DialogTitle>Property Details</DialogTitle>
-              <EstateDetails estate={estate} />
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/propiedades/${estate.id}`}>
+              <Eye className="mr-2 h-4 w-4" />
+              Ver Detalles
+            </Link>
+          </Button>
         </div>
       </div>
 
