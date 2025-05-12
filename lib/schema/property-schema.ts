@@ -1,67 +1,34 @@
-import * as z from "zod"
+// Cambiar el esquema para hacer todos los campos obligatorios y eliminar coordenadas
+import { z } from "zod"
 
-/**
- * Esquema para validación del formulario de propiedades
- */
+// Esquema para la validación del formulario de propiedades
 export const propertyFormSchema = z.object({
   id: z.string().optional(),
-  title: z.string().min(5, {
-    message: "El título debe tener al menos 5 caracteres",
-  }),
-  city: z.string().min(1, {
-    message: "La ciudad es requerida",
-  }),
-  location: z.string().min(5, {
-    message: "La ubicación debe tener al menos 5 caracteres",
-  }),
-  type: z.string().min(1, {
-    message: "Debe seleccionar un tipo de propiedad",
-  }),
-  price: z.number().min(0, {
-    message: "El precio debe ser un valor positivo",
-  }),
-  isForRent: z.boolean(),
-  area: z.number().min(1, {
-    message: "El área debe ser mayor a 0",
-  }),
-  description: z.string().min(10, {
-    message: "La descripción debe tener al menos 10 caracteres",
-  }),
-  zoning: z.string().min(1, {
-    message: "La zonificación es requerida",
-  }),
-  bedrooms: z.number().min(0).default(0),
-  bathrooms: z.number().min(0).default(0),
-  propertyCode: z.string().min(3, {
-    message: "El código de propiedad debe tener al menos 3 caracteres",
-  }),
-  videoUrl: z.string().url({ message: "URL de video inválida" }).optional().or(z.literal("")),
+  title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
+  city: z.string().min(1, "La ciudad es obligatoria"),
+  location: z.string().min(5, "La dirección debe tener al menos 5 caracteres"),
+  type: z.string().min(1, "El tipo de propiedad es obligatorio"),
+  price: z.number().min(1, "El precio debe ser mayor que 0"),
+  isForRent: z.boolean().default(false),
+  area: z.number().min(1, "El área debe ser mayor que 0"),
+  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+  zoning: z.string().min(1, "La zonificación es obligatoria"),
+  bedrooms: z.number().min(0, "El número de habitaciones es obligatorio"),
+  bathrooms: z.number().min(0, "El número de baños es obligatorio"),
+  propertyCode: z.string().min(1, "El código de propiedad es obligatorio"),
+  videoUrl: z.string().url("La URL del video debe ser válida").min(1, "La URL del video es obligatoria"),
   agent: z.object({
-    name: z.string().min(3, {
-      message: "El nombre del agente debe tener al menos 3 caracteres",
-    }),
-    phone: z.string().min(7, {
-      message: "El teléfono debe tener al menos 7 caracteres",
-    }),
-    email: z.string().email({
-      message: "Debe ingresar un email válido",
-    }),
+    name: z.string().min(3, "El nombre del agente es obligatorio"),
+    phone: z.string().min(7, "El teléfono del agente es obligatorio"),
+    email: z.string().email("El email del agente debe ser válido"),
   }),
-  coordinates: z.object({
-    lat: z.number(),
-    lng: z.number(),
-  }),
-  features: z.array(z.string()).default([]),
-  utilities: z.array(z.string()).default([]),
-  documents: z.array(z.string()).default([]),
-  images: z.array(z.string()).default([]),
-  createdAt: z
-    .string()
-    .min(10, { message: "La fecha debe tener formato DD/MM/AAAA" })
-    .default(() => new Date().toLocaleDateString("es-CO")),
+  // Se eliminó el campo coordinates
+  features: z.array(z.string()).min(1, "Debe incluir al menos una característica"),
+  utilities: z.array(z.string()).min(1, "Debe incluir al menos un servicio"),
+  documents: z.array(z.string()).min(1, "Debe incluir al menos un documento"),
+  images: z.array(z.string()).min(1, "Debe incluir al menos una imagen"),
+  createdAt: z.string().optional(),
 })
 
-/**
- * Tipo generado a partir del esquema para usar en el formulario
- */
+// Tipo derivado del esquema
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>

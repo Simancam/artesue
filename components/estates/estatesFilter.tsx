@@ -22,7 +22,6 @@ interface FilterValues {
   propertyType: string
   minPrice: string
   maxPrice: string
-  // Nuevos campos
   minBedrooms: string
   maxBedrooms: string
   minBathrooms: string
@@ -32,13 +31,13 @@ interface FilterValues {
 
 interface ProcessedFilters {
   transactionType?: string
+  isForRent?: boolean
   city?: string
   minArea?: number
   maxArea?: number
   propertyType?: string
   minPrice?: number
   maxPrice?: number
-  // Nuevos campos
   minBedrooms?: number
   maxBedrooms?: number
   minBathrooms?: number
@@ -76,7 +75,6 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
     propertyType: "",
     minPrice: "",
     maxPrice: "",
-    // Inicialización de nuevos campos
     minBedrooms: "",
     maxBedrooms: "",
     minBathrooms: "",
@@ -89,25 +87,32 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
     setFilters((prev) => ({ ...prev, [name]: value }))
 
   const handleSubmitFilters = () => {
-    const processed: ProcessedFilters = {
-      transactionType: filters.transactionType || undefined,
-      city: filters.city || undefined,
-      minArea: filters.minArea ? Number.parseInt(filters.minArea) : undefined,
-      maxArea: filters.maxArea ? Number.parseInt(filters.maxArea) : undefined,
-      propertyType: filters.propertyType || undefined,
-      minPrice: filters.minPrice ? Number.parseInt(filters.minPrice) : undefined,
-      maxPrice: filters.maxPrice ? Number.parseInt(filters.maxPrice) : undefined,
-      // Procesamiento de nuevos campos
-      minBedrooms: filters.minBedrooms ? Number.parseInt(filters.minBedrooms) : undefined,
-      maxBedrooms: filters.maxBedrooms ? Number.parseInt(filters.maxBedrooms) : undefined,
-      minBathrooms: filters.minBathrooms ? Number.parseInt(filters.minBathrooms) : undefined,
-      maxBathrooms: filters.maxBathrooms ? Number.parseInt(filters.maxBathrooms) : undefined,
-      propertyCode: filters.propertyCode || undefined,
+    // Procesamiento de filtros
+    const processed: ProcessedFilters = {}
+
+    // Solo añadimos los filtros que tienen valor
+    if (filters.transactionType) {
+      processed.transactionType = filters.transactionType
+      processed.isForRent = filters.transactionType === "rent"
     }
-    Object.keys(processed).forEach((k) => {
-      const key = k as keyof ProcessedFilters
-      if (processed[key] === undefined) delete processed[key]
-    })
+
+    if (filters.city) processed.city = filters.city
+    if (filters.propertyType) processed.propertyType = filters.propertyType
+    if (filters.propertyCode) processed.propertyCode = filters.propertyCode
+
+    if (filters.minArea) processed.minArea = Number(filters.minArea)
+    if (filters.maxArea) processed.maxArea = Number(filters.maxArea)
+
+    if (filters.minBedrooms) processed.minBedrooms = Number(filters.minBedrooms)
+    if (filters.maxBedrooms) processed.maxBedrooms = Number(filters.maxBedrooms)
+
+    if (filters.minBathrooms) processed.minBathrooms = Number(filters.minBathrooms)
+    if (filters.maxBathrooms) processed.maxBathrooms = Number(filters.maxBathrooms)
+
+    if (filters.minPrice) processed.minPrice = Number(filters.minPrice)
+    if (filters.maxPrice) processed.maxPrice = Number(filters.maxPrice)
+
+    // Pasar los filtros procesados al componente padre
     onFilterChange(processed)
   }
 
