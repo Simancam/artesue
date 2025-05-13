@@ -107,7 +107,6 @@ export default function EstateDetailPage() {
   if (loading) {
     return (
       <>
-        <Navbar />
         <div className="container mx-auto px-4 py-8 sm:py-12">
           <div className="flex justify-center items-center min-h-[300px] sm:min-h-[400px]">
             <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-gray-900"></div>
@@ -121,7 +120,6 @@ export default function EstateDetailPage() {
   if (error || !estate) {
     return (
       <>
-        <Navbar />
         <div className="container mx-auto px-4 py-8 sm:py-12">
           <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px]">
             <div className="p-4 border rounded-md bg-red-50 text-red-700 max-w-md text-center">
@@ -142,7 +140,6 @@ export default function EstateDetailPage() {
 
   return (
     <>
-      <Navbar />
       <div className="w-full bg-white">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="mb-4 sm:mb-6">

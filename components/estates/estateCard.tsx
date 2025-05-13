@@ -31,12 +31,18 @@ export function EstateGrid() {
             estatesArray = data
           } else {
             // Handle different possible Firebase response structures
-            if ((data as any).documents || (data as any).estates || (data as any).items || (data as any).data) {
+            if ((data as Record<string, unknown>).documents || 
+                (data as Record<string, unknown>).estates || 
+                (data as Record<string, unknown>).items || 
+                (data as Record<string, unknown>).data) {
               const items =
-                (data as any).documents || (data as any).estates || (data as any).items || (data as any).data
+                (data as Record<string, unknown>).documents || 
+                (data as Record<string, unknown>).estates || 
+                (data as Record<string, unknown>).items || 
+                (data as Record<string, unknown>).data
               if (Array.isArray(items)) {
                 estatesArray = items
-              } else if (typeof items === "object") {
+              } else if (typeof items === "object" && items !== null) {
                 estatesArray = Object.entries(items).map(([id, estate]) => ({
                   id,
                   ...(estate as Omit<IEstate, "id">),
@@ -121,13 +127,13 @@ export function EstateGrid() {
 
 interface IEstateCardProps {
   estate: IEstate
-  onClick?: (id: string) => void
+  // Remove onClick since it's not being used
 }
 
 /**
  * Component that displays a card with summary information about a real estate property
  */
-export function EstateCard({ estate, onClick }: IEstateCardProps) {
+export function EstateCard({ estate }: IEstateCardProps) {
   /**
    * Gets images for the carousel, maintaining compatibility with the previous structure
    */
@@ -222,7 +228,7 @@ export function EstateCard({ estate, onClick }: IEstateCardProps) {
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-sm font-medium">Precio</p>
-            {formatPrice(estate.price, estate.isForRent)}
+            {formatPrice(estate.price, estate.isForRent)} COP
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/propiedades/${estate.id}`}>

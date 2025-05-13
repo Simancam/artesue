@@ -81,7 +81,7 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground">Precio</p>
                   <p className="text-xl sm:text-2xl font-bold">
-                    ${(estate.price || 0).toLocaleString()}
+                    ${(estate.price || 0).toLocaleString()} COP
                     {estate.isForRent && (
                       <span className="text-xs sm:text-sm font-normal text-muted-foreground"> /mes</span>
                     )}
@@ -130,9 +130,6 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button size="default" className="text-sm sm:text-base h-10 sm:h-12 flex-1">
                 Contactar Ahora
-              </Button>
-              <Button variant="outline" size="default" className="text-sm sm:text-base h-10 sm:h-12 flex-1">
-                Agendar Visita
               </Button>
             </div>
           </div>
@@ -267,12 +264,9 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex flex-col grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                 <Button size="default" className="text-sm sm:text-base h-10 sm:h-12">
                   Contactar Ahora
-                </Button>
-                <Button variant="outline" size="default" className="text-sm sm:text-base h-10 sm:h-12">
-                  Agendar Visita
                 </Button>
               </div>
             </div>

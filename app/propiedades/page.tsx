@@ -15,7 +15,7 @@ const Propiedades = () => {
   const [filteredEstates, setFilteredEstates] = useState<IEstate[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedEstate, setSelectedEstate] = useState<IEstate | null>(null)
-  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -128,22 +128,6 @@ const Propiedades = () => {
     [estates, filterProperties],
   )
 
-  const handleEstateClick = useCallback(
-    (id: string) => {
-      setDetailsLoading(true)
-      const estateDetails = estates.find((estate) => estate.id === id) || null
-
-      if (estateDetails) {
-        setSelectedEstate(estateDetails)
-      } else {
-        console.error("No se encontraron detalles para la propiedad")
-      }
-
-      setDetailsLoading(false)
-    },
-    [estates],
-  )
-
   const closeDetails = useCallback(() => {
     setSelectedEstate(null)
   }, [])
@@ -200,7 +184,7 @@ const Propiedades = () => {
           ) : filteredEstates.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredEstates.map((estate) => (
-                <EstateCard key={estate.id} estate={estate} onClick={() => handleEstateClick(estate.id)} />
+                <EstateCard key={estate.id} estate={estate}/>
               ))}
             </div>
           ) : (
