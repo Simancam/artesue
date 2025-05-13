@@ -23,6 +23,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { PropertyForm } from "@/components/dashboard/propertyForm"
 
+type FirebaseDataStructure = {
+  documents?: unknown;
+  estates?: unknown;
+  items?: unknown;
+  data?: unknown;
+};
+
 export default function DashboardPage() {
   const [estates, setEstates] = useState<IEstate[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -46,41 +53,34 @@ export default function DashboardPage() {
       setIsLoading(true)
       const data = await EstatesService.getAllEstates()
 
-      // Log para depuración
       console.log("Datos originales de Firebase:", data)
 
-      // Transformar el objeto de Firebase en un array
       let estatesArray: IEstate[] = []
 
       if (data && typeof data === "object") {
+        const firebaseData = data as FirebaseDataStructure;
+
         if (Array.isArray(data)) {
-          // Si ya es un array
           estatesArray = data
         } else {
-          // Si es un objeto, verificar si tiene una propiedad que contenga los datos
-          // A veces Firebase devuelve { documents: [...] } o algo similar
-          if ((data as any).documents || (data as any).estates || (data as any).items || (data as any).data) {
-            const items = (data as any).documents || (data as any).estates || (data as any).items || (data as any).data
+          if (firebaseData.documents || firebaseData.estates || firebaseData.items || firebaseData.data) {
+            const items = firebaseData.documents || firebaseData.estates || firebaseData.items || firebaseData.data
             if (Array.isArray(items)) {
               estatesArray = items
-            } else if (typeof items === "object") {
-              // Si es un objeto de objetos, convertirlo a array
+            } else if (typeof items === "object" && items !== null) {
               estatesArray = Object.entries(items).map(([id, estate]) => ({
                 id,
                 ...(estate as Omit<IEstate, "id">),
               }))
             }
           } else {
-            // Si es un objeto plano de propiedades
-            estatesArray = Object.entries(data).map(([id, estate]) => {
-              // Asegurarse de que estate sea un objeto
+            estatesArray = Object.entries(firebaseData).map(([id, estate]) => {
               if (typeof estate === "object" && estate !== null) {
                 return {
                   id,
                   ...(estate as Omit<IEstate, "id">),
                 }
               }
-              // Si no es un objeto, crear uno con valores por defecto
               return {
                 id,
                 title: `Propiedad ${id}`,
@@ -96,13 +96,10 @@ export default function DashboardPage() {
         }
       }
 
-      // Log para depuración
       console.log("Array transformado:", estatesArray)
 
-      // Verificar que cada propiedad tenga los campos necesarios
       const validEstates = estatesArray.map((estate) => ({
         ...estate,
-        // Asegurar que estos campos existan con valores por defecto si no están presentes
         isForRent: typeof estate.isForRent === "boolean" ? estate.isForRent : false,
         features: Array.isArray(estate.features) ? estate.features : [],
         price: typeof estate.price === "number" ? estate.price : 0,
@@ -136,7 +133,6 @@ export default function DashboardPage() {
 
   const handlePropertyAdded = async (property: PropertyFormValues) => {
     try {
-      // Crear una nueva propiedad
       const newProperty: Omit<IEstate, "id" | "createdAt" | "updatedAt"> = {
         ...property,
         images: property.images || [],
@@ -146,7 +142,7 @@ export default function DashboardPage() {
         zoning: property.zoning || "",
         utilities: property.utilities || [],
         agent: property.agent || { name: "", phone: "", email: "" },
-        documents: property.documents || [],// Valor por defecto ya que el formulario no lo incluye
+        documents: property.documents || [],
       }
 
       console.log("Nueva propiedad a añadir:", newProperty)
@@ -160,15 +156,12 @@ export default function DashboardPage() {
     }
   }
 
-  // Modifica la función handlePropertyUpdated para manejar correctamente los datos de Firebase
   const handlePropertyUpdated = async (property: PropertyFormValues) => {
     if (!editingEstate) return
 
     try {
-      // Crear un objeto con los datos actualizados, manteniendo la estructura esperada por Firebase
       const updatedData: Partial<IEstate> = {
         ...property,
-        // Asegurarse de que todos los campos estén presentes y con el formato correcto
         title: property.title,
         location: property.location,
         type: property.type,
@@ -186,25 +179,17 @@ export default function DashboardPage() {
         utilities: Array.isArray(property.utilities) ? property.utilities : [],
         documents: Array.isArray(property.documents) ? property.documents : [],
         images: Array.isArray(property.images) ? property.images : [],
-        // Mantener las coordenadas existentes o usar un valor por defecto
-        // Mantener estos campos si existen
         city: property.city || editingEstate.city || "",
         createdAt: editingEstate.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      // Llamar al servicio para actualizar la propiedad
-      const updatedEstate = await EstatesService.updateEstate(editingEstate.id, updatedData)
-
-      // Crear un objeto completo con todos los campos necesarios para actualizar el estado local
-      // Esto es importante porque Firebase puede devolver solo los campos actualizados
       const completeUpdatedEstate: IEstate = {
         ...editingEstate,
         ...updatedData,
         id: editingEstate.id,
       }
 
-      // Actualizar el estado local con los datos actualizados
       setEstates((prev) => prev.map((estate) => (estate.id === editingEstate.id ? completeUpdatedEstate : estate)))
 
       setFormOpen(false)
@@ -216,13 +201,10 @@ export default function DashboardPage() {
     }
   }
 
-  // Modifica la función handleEditClick para asegurarse de que todos los datos estén presentes
   function handleEditClick(estate: IEstate) {
     try {
-      // Asegurarse de que todos los campos necesarios estén presentes
       const completeEstate: IEstate = {
         ...estate,
-        // Proporcionar valores por defecto para campos que podrían faltar
         features: Array.isArray(estate.features) ? estate.features : [],
         utilities: Array.isArray(estate.utilities) ? estate.utilities : [],
         documents: Array.isArray(estate.documents) ? estate.documents : [],
@@ -276,7 +258,7 @@ export default function DashboardPage() {
     createColumn<IEstate>("type", "Tipo", (row) => row.type),
     createColumn<IEstate>("status", "Estado", (row) => (row.isForRent ? "Arriendo" : "Venta"), {
       align: "center",
-      cell: (value: unknown, row) => {
+      cell: (value: unknown, row: IEstate) => {
         const isRent = row.isForRent
         const color = isRent ? "text-green-600 bg-green-100" : "text-blue-600 bg-blue-100"
         return <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{String(value)}</span>
@@ -284,7 +266,7 @@ export default function DashboardPage() {
     }),
     createColumn<IEstate>("price", "Precio", (row) => row.price, {
       align: "right",
-      cell: (_: unknown, row) => {
+      cell: (_: unknown, row: IEstate) => {
         const formatted = new Intl.NumberFormat("es-CO", {
           style: "currency",
           currency: "COP",
@@ -390,7 +372,6 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Diálogo para añadir/editar propiedad */}
       <Dialog open={formOpen} onOpenChange={handleFormClose}>
         <DialogContent className="sm:max-w-[900px] md:max-w-[1600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -409,13 +390,12 @@ export default function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Diálogo de confirmación para eliminar */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que deseas eliminar la propiedad "{estateToDelete?.title}"? Esta acción no se puede
+              ¿Estás seguro de que deseas eliminar la propiedad &quot;{estateToDelete?.title}&quot;? Esta acción no se puede
               deshacer.
             </DialogDescription>
           </DialogHeader>

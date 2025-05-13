@@ -49,7 +49,7 @@ export default function EstateDetailPage() {
         let data
         try {
           data = JSON.parse(responseText)
-        } catch (parseError) {
+        } catch {
           throw new Error("Error al procesar la respuesta del servidor")
         }
 
@@ -85,9 +85,15 @@ export default function EstateDetailPage() {
         }
 
         setEstate(processedEstate)
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching estate details:", err)
-        setError(`Error: ${err.message || "No se pudo cargar los detalles de la propiedad"}`)
+        setError(
+          `Error: ${
+            typeof err === "object" && err !== null && "message" in err
+              ? (err as { message?: string }).message
+              : "No se pudo cargar los detalles de la propiedad"
+          }`
+        )
       } finally {
         setLoading(false)
       }

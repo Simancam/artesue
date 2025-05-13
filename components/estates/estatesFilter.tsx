@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -13,8 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { EstatesService } from "@/services/estatesService"
 
-interface FilterValues {
+// Interfaz simplificada para los filtros
+export interface EstateFilters {
   transactionType: string
   city: string
   minArea: string
@@ -22,52 +24,22 @@ interface FilterValues {
   propertyType: string
   minPrice: string
   maxPrice: string
-  minBedrooms: string
-  maxBedrooms: string
-  minBathrooms: string
-  maxBathrooms: string
+  bedrooms: string
+  bathrooms: string
   propertyCode: string
 }
 
-interface ProcessedFilters {
-  transactionType?: string
-  isForRent?: boolean
-  city?: string
-  minArea?: number
-  maxArea?: number
-  propertyType?: string
-  minPrice?: number
-  maxPrice?: number
-  minBedrooms?: number
-  maxBedrooms?: number
-  minBathrooms?: number
-  maxBathrooms?: number
-  propertyCode?: string
-}
-
-const COLOMBIAN_CITIES = [
-  "Bogotá D.C.",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Bucaramanga",
-  "Pereira",
-  "Santa Marta",
-  "Cúcuta",
-  "Ibagué",
-  "Manizales",
-  "Villavicencio",
-]
-
+// Lista de tipos de propiedad para el dropdown
 const PROPERTY_TYPES = ["Comercial", "Residencial", "Industrial", "Agrícola", "Turístico"]
 
+// Props para el componente EstatesFilter
 interface EstatesFilterProps {
-  onFilterChange: (filters: ProcessedFilters) => void
+  onFilterChange: (filters: EstateFilters) => void
 }
 
 export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
-  const initialFilters: FilterValues = {
+  // Estado inicial de los filtros
+  const initialFilters: EstateFilters = {
     transactionType: "",
     city: "",
     minArea: "",
@@ -75,50 +47,69 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
     propertyType: "",
     minPrice: "",
     maxPrice: "",
-    minBedrooms: "",
-    maxBedrooms: "",
-    minBathrooms: "",
-    maxBathrooms: "",
+    bedrooms: "",
+    bathrooms: "",
     propertyCode: "",
   }
-  const [filters, setFilters] = useState<FilterValues>(initialFilters)
 
-  const handleInputChange = (name: keyof FilterValues, value: string) =>
-    setFilters((prev) => ({ ...prev, [name]: value }))
+  // Estado para almacenar los valores actuales de los filtros
+  const [filters, setFilters] = useState<EstateFilters>(initialFilters)
 
-  const handleSubmitFilters = () => {
-    // Procesamiento de filtros
-    const processed: ProcessedFilters = {}
+  // Estado para almacenar las ciudades disponibles
+  const [availableCities, setAvailableCities] = useState<string[]>([])
 
-    // Solo añadimos los filtros que tienen valor
-    if (filters.transactionType) {
-      processed.transactionType = filters.transactionType
-      processed.isForRent = filters.transactionType === "rent"
+  // Estado para controlar la carga de ciudades
+  const [loadingCities, setLoadingCities] = useState(true)
+
+  // Cargar las ciudades disponibles desde la API
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        setLoadingCities(true)
+
+        // Intentar cargar todas las propiedades para extraer las ciudades
+        const estates = await EstatesService.getAllEstates()
+
+        if (estates && estates.length > 0) {
+          // Extraer ciudades únicas de las propiedades
+          const cities = [...new Set(estates.map((estate) => estate.city).filter((city): city is string => Boolean(city)))]
+
+          // Ordenar alfabéticamente
+          cities.sort()
+
+          setAvailableCities(cities)
+        } else {
+          setAvailableCities([])
+        }
+      } catch {
+        setAvailableCities([])
+      } finally {
+        setLoadingCities(false)
+      }
     }
 
-    if (filters.city) processed.city = filters.city
-    if (filters.propertyType) processed.propertyType = filters.propertyType
-    if (filters.propertyCode) processed.propertyCode = filters.propertyCode
+    loadCities()
+  }, [])
 
-    if (filters.minArea) processed.minArea = Number(filters.minArea)
-    if (filters.maxArea) processed.maxArea = Number(filters.maxArea)
-
-    if (filters.minBedrooms) processed.minBedrooms = Number(filters.minBedrooms)
-    if (filters.maxBedrooms) processed.maxBedrooms = Number(filters.maxBedrooms)
-
-    if (filters.minBathrooms) processed.minBathrooms = Number(filters.minBathrooms)
-    if (filters.maxBathrooms) processed.maxBathrooms = Number(filters.maxBathrooms)
-
-    if (filters.minPrice) processed.minPrice = Number(filters.minPrice)
-    if (filters.maxPrice) processed.maxPrice = Number(filters.maxPrice)
-
-    // Pasar los filtros procesados al componente padre
-    onFilterChange(processed)
+  // Manejador para cambios en los inputs
+  const handleInputChange = (name: keyof EstateFilters, value: string) => {
+    setFilters((prev) => ({ ...prev, [name]: value }))
   }
 
+  // Manejador para aplicar los filtros
+  const handleSubmitFilters = () => {
+    // Notificar al componente padre con los filtros actuales
+    onFilterChange(filters)
+  }
+
+  // Manejador para resetear los filtros
   const handleResetFilters = () => {
+    // Primero actualizamos el estado local
     setFilters(initialFilters)
-    onFilterChange({})
+    // Luego notificamos al componente padre
+    setTimeout(() => {
+      onFilterChange(initialFilters)
+    }, 0)
   }
 
   return (
@@ -127,9 +118,9 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
         <div className="rounded-xl bg-white p-6 shadow-lg border border-gray-100">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Buscar Propiedades</h2>
 
-          {/* Primera fila: Tipo de transacción, Ciudad, Tipo de propiedad, Código */}
+          {/* Primera fila: Tipo de transacción, Ciudad, Tipo de propiedad, Código de propiedad */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            {/* Transaction Type */}
+            {/* Tipo de transacción */}
             <div className="space-y-2">
               <Label htmlFor="transactionType" className="text-gray-700">
                 Tipo de transacción
@@ -148,19 +139,23 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
               </Select>
             </div>
 
-            {/* City */}
+            {/* Ciudad */}
             <div className="space-y-2">
               <Label htmlFor="city" className="text-gray-700">
                 Ciudad
               </Label>
-              <Select value={filters.city} onValueChange={(value) => handleInputChange("city", value)}>
+              <Select
+                value={filters.city}
+                onValueChange={(value) => handleInputChange("city", value)}
+                disabled={loadingCities || availableCities.length === 0}
+              >
                 <SelectTrigger id="city" className="w-full">
-                  <SelectValue placeholder="Seleccionar ciudad" />
+                  <SelectValue placeholder={loadingCities ? "Cargando ciudades..." : "Seleccionar ciudad"} />
                 </SelectTrigger>
                 <SelectContent className="max-h-80">
                   <SelectGroup>
-                    <SelectLabel>Ciudades Principales</SelectLabel>
-                    {COLOMBIAN_CITIES.map((city) => (
+                    <SelectLabel>Ciudades Disponibles</SelectLabel>
+                    {availableCities.map((city) => (
                       <SelectItem key={city} value={city}>
                         {city}
                       </SelectItem>
@@ -170,7 +165,7 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
               </Select>
             </div>
 
-            {/* Property Type */}
+            {/* Tipo de propiedad */}
             <div className="space-y-2">
               <Label htmlFor="propertyType" className="text-gray-700">
                 Tipo de propiedad
@@ -189,7 +184,7 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
               </Select>
             </div>
 
-            {/* Property Code */}
+            {/* Código de propiedad */}
             <div className="space-y-2">
               <Label htmlFor="propertyCode" className="text-gray-700">
                 Código de propiedad
@@ -207,7 +202,7 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
 
           {/* Segunda fila: Área, Habitaciones, Baños, Precio */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            {/* Area Range */}
+            {/* Rango de área */}
             <div className="space-y-2">
               <Label htmlFor="area" className="text-gray-700">
                 Área (m²)
@@ -232,57 +227,37 @@ export default function EstatesFilter({ onFilterChange }: EstatesFilterProps) {
               </div>
             </div>
 
-            {/* Bedrooms Range */}
+            {/* Habitaciones */}
             <div className="space-y-2">
               <Label htmlFor="bedrooms" className="text-gray-700">
                 Habitaciones
               </Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="minBedrooms"
-                  type="number"
-                  placeholder="Mín"
-                  value={filters.minBedrooms}
-                  onChange={(e) => handleInputChange("minBedrooms", e.target.value)}
-                  className="w-1/2"
-                />
-                <Input
-                  id="maxBedrooms"
-                  type="number"
-                  placeholder="Máx"
-                  value={filters.maxBedrooms}
-                  onChange={(e) => handleInputChange("maxBedrooms", e.target.value)}
-                  className="w-1/2"
-                />
-              </div>
+              <Input
+                id="bedrooms"
+                type="number"
+                placeholder="Número"
+                value={filters.bedrooms}
+                onChange={(e) => handleInputChange("bedrooms", e.target.value)}
+                className="w-full"
+              />
             </div>
 
-            {/* Bathrooms Range */}
+            {/* Baños */}
             <div className="space-y-2">
               <Label htmlFor="bathrooms" className="text-gray-700">
                 Baños
               </Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="minBathrooms"
-                  type="number"
-                  placeholder="Mín"
-                  value={filters.minBathrooms}
-                  onChange={(e) => handleInputChange("minBathrooms", e.target.value)}
-                  className="w-1/2"
-                />
-                <Input
-                  id="maxBathrooms"
-                  type="number"
-                  placeholder="Máx"
-                  value={filters.maxBathrooms}
-                  onChange={(e) => handleInputChange("maxBathrooms", e.target.value)}
-                  className="w-1/2"
-                />
-              </div>
+              <Input
+                id="bathrooms"
+                type="number"
+                placeholder="Número"
+                value={filters.bathrooms}
+                onChange={(e) => handleInputChange("bathrooms", e.target.value)}
+                className="w-full"
+              />
             </div>
 
-            {/* Price Range */}
+            {/* Rango de precio */}
             <div className="space-y-2">
               <Label htmlFor="price" className="text-gray-700">
                 Precio (COP)

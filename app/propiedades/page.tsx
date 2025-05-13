@@ -1,62 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
-import EstatesFilter from "@/components/estates/estatesFilter"
+import EstatesFilter, { type EstateFilters } from "@/components/estates/estatesFilter"
 import { EstateCard } from "@/components/estates/estateCard"
 import Banner from "@/components/banner"
 import { EstatesService, type IEstate } from "@/services/estatesService"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { EstateDetails } from "@/components/estates/estateDetails"
-
-interface ProcessedFilters {
-  transactionType?: string
-  city?: string
-  minArea?: number
-  maxArea?: number
-  propertyType?: string
-  minPrice?: number
-  maxPrice?: number
-  isForRent?: boolean
-  propertyCode?: string
-  minBedrooms?: number
-  maxBedrooms?: number
-  minBathrooms?: number
-  maxBathrooms?: number
-}
-
-// Datos de ejemplo para mostrar mientras se carga o si hay error
-const mockEstates: IEstate[] = [
-  {
-    id: "mock-1",
-    title: "Propiedad de Ejemplo 1",
-    location: "Av. Principal 123",
-    type: "Casa",
-    price: 250000,
-    isForRent: false,
-    area: 120,
-    features: ["Terraza", "Jardín", "Estacionamiento"],
-    bedrooms: 3,
-    bathrooms: 2,
-    propertyCode: "PROP001",
-    city: "Ciudad Ejemplo",
-  },
-  {
-    id: "mock-2",
-    title: "Departamento en Renta",
-    location: "Calle Secundaria 456",
-    type: "Departamento",
-    price: 1200,
-    isForRent: true,
-    area: 75,
-    features: ["Amueblado", "Seguridad 24h", "Gimnasio"],
-    bedrooms: 2,
-    bathrooms: 1,
-    propertyCode: "PROP002",
-    city: "Ciudad Ejemplo",
-  },
-]
 
 const Propiedades = () => {
   const [estates, setEstates] = useState<IEstate[]>([])
@@ -65,50 +17,33 @@ const Propiedades = () => {
   const [selectedEstate, setSelectedEstate] = useState<IEstate | null>(null)
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [useMockData, setUseMockData] = useState(false)
 
-  // Función para cargar los datos iniciales
   useEffect(() => {
     const loadEstates = async () => {
       try {
         setLoading(true)
 
-        // Verificamos si la variable de entorno está definida
         if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
-          console.warn("NEXT_PUBLIC_API_BASE_URL no está definida. Usando datos de prueba.")
-          setEstates(mockEstates)
-          setFilteredEstates(mockEstates)
-          setUseMockData(true)
-          setError("API no configurada. Mostrando datos de ejemplo.")
+          setError("API no configurada. No se pueden cargar propiedades.")
+          setLoading(false)
           return
         }
 
-        // Intentamos obtener los datos reales usando el servicio
-        console.log("Intentando cargar datos reales desde la API...")
-        const data = await EstatesService.getAllEstates()
-        console.log("Datos recibidos de la API:", data)
+        try {
+          const data = await EstatesService.getAllEstates()
 
-        // Si hay datos reales, los usamos
-        if (data && data.length > 0) {
-          console.log("Datos reales cargados correctamente:", data)
-          setEstates(data)
-          setFilteredEstates(data)
-          setUseMockData(false)
-          setError(null)
-        } else {
-          // Si no hay datos reales, usamos los datos de prueba
-          console.warn("No se obtuvieron datos reales. Usando datos de prueba.")
-          setEstates(mockEstates)
-          setFilteredEstates(mockEstates)
-          setUseMockData(true)
-          setError("No se encontraron propiedades en la base de datos. Mostrando ejemplos.")
+          if (data && data.length > 0) {
+            setEstates(data)
+            setFilteredEstates(data)
+            setError(null)
+          } else {
+            setError("No se encontraron propiedades en la base de datos.")
+          }
+        } catch {
+          setError("Error al cargar datos. Por favor, intenta de nuevo más tarde.")
         }
-      } catch (e) {
-        console.error("Error al cargar propiedades:", e)
-        setEstates(mockEstates)
-        setFilteredEstates(mockEstates)
-        setUseMockData(true)
-        setError("Error al cargar datos reales. Mostrando ejemplos.")
+      } catch {
+        setError("Error al cargar datos. Por favor, intenta de nuevo más tarde.")
       } finally {
         setLoading(false)
       }
@@ -117,144 +52,101 @@ const Propiedades = () => {
     loadEstates()
   }, [])
 
-  const handleFilterChange = async (filters: ProcessedFilters) => {
-    try {
+  const filterProperties = useCallback((allEstates: IEstate[], filters: EstateFilters) => {
+    const hasActiveFilters = Object.values(filters).some((value) => value !== "")
+    if (!hasActiveFilters) {
+      return allEstates
+    }
+
+    const matchesNumberFilter = (value: number | undefined, filterValue: string, isMin: boolean): boolean => {
+      if (!filterValue || filterValue === "") return true
+      if (value === undefined) return false
+
+      const numValue = Number(filterValue)
+      if (isNaN(numValue)) return true
+
+      return isMin ? value >= numValue : value <= numValue
+    }
+
+    return allEstates.filter((estate) => {
+      if (filters.transactionType === "rent" && !estate.isForRent) return false
+      if (filters.transactionType === "buy" && estate.isForRent) return false
+
+      if (filters.city && filters.city !== "") {
+        if (!estate.city) return false
+        if (estate.city !== filters.city) return false
+      }
+
+      if (filters.propertyType && filters.propertyType !== "") {
+        if (!estate.type) return false
+        if (estate.type !== filters.propertyType) return false
+      }
+
+      if (filters.propertyCode && filters.propertyCode !== "") {
+        if (!estate.propertyCode) return false
+        if (!estate.propertyCode.toLowerCase().includes(filters.propertyCode.toLowerCase())) return false
+      }
+
+      if (!matchesNumberFilter(estate.area, filters.minArea, true)) return false
+      if (!matchesNumberFilter(estate.area, filters.maxArea, false)) return false
+
+      if (filters.bedrooms && filters.bedrooms !== "") {
+        const bedroomsValue = Number.parseInt(filters.bedrooms)
+        if (!isNaN(bedroomsValue) && estate.bedrooms !== bedroomsValue) {
+          return false
+        }
+      }
+
+      if (filters.bathrooms && filters.bathrooms !== "") {
+        const bathroomsValue = Number.parseInt(filters.bathrooms)
+        if (!isNaN(bathroomsValue) && estate.bathrooms !== bathroomsValue) {
+          return false
+        }
+      }
+
+      if (!matchesNumberFilter(estate.price, filters.minPrice, true)) return false
+      if (!matchesNumberFilter(estate.price, filters.maxPrice, false)) return false
+
+      return true
+    })
+  }, [])
+
+  const handleFilterChange = useCallback(
+    (filters: EstateFilters) => {
       setLoading(true)
 
-      // Si estamos usando datos de ejemplo, filtramos en cliente
-      if (useMockData) {
-        let filtered = [...estates]
-
-        // Aplicamos cada filtro si está presente
-        if (filters.isForRent !== undefined) {
-          filtered = filtered.filter((estate) => estate.isForRent === filters.isForRent)
-        }
-
-        if (filters.city) {
-          filtered = filtered.filter((estate) => estate.city?.toLowerCase().includes(filters.city!.toLowerCase()))
-        }
-
-        if (filters.propertyType) {
-          filtered = filtered.filter((estate) => estate.type?.toLowerCase() === filters.propertyType!.toLowerCase())
-        }
-
-        if (filters.propertyCode) {
-          filtered = filtered.filter((estate) =>
-            estate.propertyCode?.toLowerCase().includes(filters.propertyCode!.toLowerCase()),
-          )
-        }
-
-        if (filters.minArea) {
-          filtered = filtered.filter((estate) => estate.area >= filters.minArea!)
-        }
-
-        if (filters.maxArea) {
-          filtered = filtered.filter((estate) => estate.area <= filters.maxArea!)
-        }
-
-        if (filters.minBedrooms) {
-          filtered = filtered.filter((estate) => (estate.bedrooms || 0) >= filters.minBedrooms!)
-        }
-
-        if (filters.maxBedrooms) {
-          filtered = filtered.filter((estate) => (estate.bedrooms || 0) <= filters.maxBedrooms!)
-        }
-
-        if (filters.minBathrooms) {
-          filtered = filtered.filter((estate) => (estate.bathrooms || 0) >= filters.minBathrooms!)
-        }
-
-        if (filters.maxBathrooms) {
-          filtered = filtered.filter((estate) => (estate.bathrooms || 0) <= filters.maxBathrooms!)
-        }
-
-        if (filters.minPrice) {
-          filtered = filtered.filter((estate) => estate.price >= filters.minPrice!)
-        }
-
-        if (filters.maxPrice) {
-          filtered = filtered.filter((estate) => estate.price <= filters.maxPrice!)
-        }
-
+      try {
+        const filtered = filterProperties(estates, filters)
         setFilteredEstates(filtered)
-      } else {
-        // Si usamos datos reales, usamos el servicio para filtrar
-        try {
-          // Convertimos transactionType a isForRent para la API
-          const apiFilters = { ...filters }
-          if (filters.transactionType) {
-            apiFilters.isForRent = filters.transactionType === "rent"
-            delete apiFilters.transactionType
-          }
-
-          const filteredData = await EstatesService.filterEstates(apiFilters)
-          setFilteredEstates(filteredData)
-        } catch (error) {
-          console.error("Error al filtrar propiedades con la API:", error)
-
-          // Si falla la API, filtramos en cliente como respaldo
-          let filtered = [...estates]
-
-          // Aplicamos los mismos filtros que arriba
-          if (filters.isForRent !== undefined) {
-            filtered = filtered.filter((estate) => estate.isForRent === filters.isForRent)
-          } else if (filters.transactionType) {
-            const isRent = filters.transactionType === "rent"
-            filtered = filtered.filter((estate) => estate.isForRent === isRent)
-          }
-
-          // Resto de filtros igual que arriba...
-          if (filters.city) {
-            filtered = filtered.filter((estate) => estate.city?.toLowerCase().includes(filters.city!.toLowerCase()))
-          }
-
-          // Aplicamos el resto de filtros...
-
-          setFilteredEstates(filtered)
-        }
+      } catch {
+        setError("Error al aplicar filtros. Mostrando todas las propiedades.")
+        setFilteredEstates(estates)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error("Error al aplicar filtros:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    },
+    [estates, filterProperties],
+  )
 
-  const handleEstateClick = async (id: string) => {
-    try {
+  const handleEstateClick = useCallback(
+    (id: string) => {
       setDetailsLoading(true)
-
-      let estateDetails: IEstate | null = null
-
-      // Si usamos datos de ejemplo, buscamos en el array local
-      if (useMockData) {
-        estateDetails = estates.find((estate) => estate.id === id) || null
-      } else {
-        // Si usamos datos reales, usamos el servicio
-        try {
-          estateDetails = await EstatesService.getEstateById(id)
-        } catch (error) {
-          console.error(`Error al obtener detalles de la API para ID ${id}:`, error)
-          // Si falla, buscamos en el array local como respaldo
-          estateDetails = estates.find((estate) => estate.id === id) || null
-        }
-      }
+      const estateDetails = estates.find((estate) => estate.id === id) || null
 
       if (estateDetails) {
         setSelectedEstate(estateDetails)
       } else {
         console.error("No se encontraron detalles para la propiedad")
       }
-    } catch (error) {
-      console.error("Error al cargar detalles de la propiedad:", error)
-    } finally {
-      setDetailsLoading(false)
-    }
-  }
 
-  const closeDetails = () => {
+      setDetailsLoading(false)
+    },
+    [estates],
+  )
+
+  const closeDetails = useCallback(() => {
     setSelectedEstate(null)
-  }
+  }, [])
 
   return (
     <>
@@ -280,12 +172,6 @@ const Propiedades = () => {
                 ? "Propiedades Disponibles"
                 : `Propiedades Filtradas (${filteredEstates.length})`}
             </h2>
-
-            {useMockData && (
-              <div className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-                Usando datos de ejemplo
-              </div>
-            )}
           </div>
 
           {error && (
@@ -328,14 +214,20 @@ const Propiedades = () => {
         </div>
       </section>
 
-      {selectedEstate && (
-        <Dialog open={!!selectedEstate} onOpenChange={(open) => !open && closeDetails()}>
-          <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[700px]">
-            <DialogTitle>Detalles de la Propiedad</DialogTitle>
+      <Dialog open={!!selectedEstate} onOpenChange={(open) => !open && closeDetails()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle className="text-xl font-bold">
+            {detailsLoading ? "Cargando detalles..." : "Detalles de la Propiedad"}
+          </DialogTitle>
+          {detailsLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : selectedEstate ? (
             <EstateDetails estate={selectedEstate} />
-          </DialogContent>
-        </Dialog>
-      )}
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </>
