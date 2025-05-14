@@ -157,49 +157,36 @@ export default function DashboardPage() {
   }
 
   const handlePropertyUpdated = async (property: PropertyFormValues) => {
-    if (!editingEstate) return
+  if (!editingEstate) return
 
-    try {
-      const updatedData: Partial<IEstate> = {
-        ...property,
-        title: property.title,
-        location: property.location,
-        type: property.type,
-        price: Number(property.price),
-        isForRent: Boolean(property.isForRent),
-        area: Number(property.area),
-        description: property.description || "",
-        zoning: property.zoning || "",
-        bedrooms: Number(property.bedrooms || 0),
-        bathrooms: Number(property.bathrooms || 0),
-        propertyCode: property.propertyCode || "",
-        videoUrl: property.videoUrl || "",
-        agent: property.agent || { name: "", phone: "", email: "" },
-        features: Array.isArray(property.features) ? property.features : [],
-        utilities: Array.isArray(property.utilities) ? property.utilities : [],
-        documents: Array.isArray(property.documents) ? property.documents : [],
-        images: Array.isArray(property.images) ? property.images : [],
-        city: property.city || editingEstate.city || "",
-        createdAt: editingEstate.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
+  try {
+    // 1. Actualizar en el backend
+    const updatedEstate = await EstatesService.updateEstate(editingEstate.id, {
+      ...property,
+      price: Number(property.price),
+      isForRent: Boolean(property.isForRent),
+      area: Number(property.area),
+      // Convertir todos los campos necesarios
+      bedrooms: Number(property.bedrooms || 0),
+      bathrooms: Number(property.bathrooms || 0),
+      features: Array.isArray(property.features) ? property.features : [],
+      utilities: Array.isArray(property.utilities) ? property.utilities : [],
+      images: Array.isArray(property.images) ? property.images : [],
+    });
 
-      const completeUpdatedEstate: IEstate = {
-        ...editingEstate,
-        ...updatedData,
-        id: editingEstate.id,
-      }
+    // 2. Actualizar el estado local con la respuesta del servidor
+    setEstates(prev => prev.map(estate => 
+      estate.id === editingEstate.id ? updatedEstate : estate
+    ));
 
-      setEstates((prev) => prev.map((estate) => (estate.id === editingEstate.id ? completeUpdatedEstate : estate)))
-
-      setFormOpen(false)
-      setEditingEstate(null)
-      showTemporaryAlert("success", "Propiedad actualizada correctamente")
-    } catch (error) {
-      console.error("Error al actualizar propiedad:", error)
-      showTemporaryAlert("error", "Error al actualizar la propiedad")
-    }
+    setFormOpen(false);
+    setEditingEstate(null);
+    showTemporaryAlert("success", "Propiedad actualizada correctamente");
+  } catch (error) {
+    console.error("Error al actualizar propiedad:", error);
+    showTemporaryAlert("error", "Error al actualizar la propiedad");
   }
+}
 
   function handleEditClick(estate: IEstate) {
     try {

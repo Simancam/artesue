@@ -7,16 +7,11 @@ import { Separator } from "@/components/ui/separator"
 import type { IEstate } from "@/services/estatesService"
 import { EstateCarousel } from "./estatesCarousel"
 
-interface IEstateDetailsProps {
+interface IEstateDetailsComponentProps {
   estate: IEstate
 }
 
-/**
- * Componente que muestra los detalles completos de una propiedad inmobiliaria
- * con un diseño fluido que muestra toda la información al hacer scroll
- */
-export function EstateDetails({ estate }: IEstateDetailsProps) {
-  // Valores por defecto para propiedades opcionales
+export function EstateDetails({ estate }: IEstateDetailsComponentProps) {
   const defaultUtilities = ["Agua", "Electricidad", "Alcantarillado", "Internet"]
   const defaultDocuments = ["Escritura", "Plano catastral", "Certificado de libertad"]
   const defaultFeatures = [
@@ -30,22 +25,27 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
     "Vista panorámica",
   ]
 
-  /**
-   * Obtiene las imágenes para el carrusel, manteniendo compatibilidad con la estructura anterior
-   */
   const getImages = (): string[] => {
-    if (estate.images && estate.images.length > 0) {
-      return estate.images
-    }
-    if (estate.image) {
-      return [estate.image]
-    }
+    if (estate.images && estate.images.length > 0) return estate.images
+    if (estate.image) return [estate.image]
     return [`/placeholder.svg?height=400&width=700&text=${encodeURIComponent(estate.type || "Propiedad")}`]
+  }
+
+  const getWhatsAppUrl = () => {
+    const phoneNumber = (estate.agent?.phone || "+573001234567")
+      .replace(/[^\d+]/g, '')
+      .replace(/^0+/, '')
+    
+    const message = encodeURIComponent(
+      `Hola, estoy interesado en la propiedad con código: ${estate.propertyCode || "N/A"}`
+    )
+
+    return `https://wa.me/${phoneNumber}?text=${message}`
   }
 
   return (
     <div className="w-full mx-auto">
-      {/* Encabezado con título y ubicación */}
+      {/* Encabezado */}
       <div className="mb-5 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">{estate.title || "Sin título"}</h1>
@@ -59,9 +59,8 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
         </div>
       </div>
 
-      {/* Sección principal con imagen e información básica */}
+      {/* Sección principal */}
       <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-8 sm:mb-12">
-        {/* Columna izquierda - Carrusel de imágenes */}
         <div className="w-full lg:w-3/5">
           <EstateCarousel
             images={getImages()}
@@ -72,7 +71,6 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
           />
         </div>
 
-        {/* Columna derecha - Información básica */}
         <div className="w-full lg:w-2/5 mt-4 lg:mt-0">
           <div className="bg-slate-50 rounded-lg p-4 sm:p-6 h-full">
             <div className="mb-4 sm:mb-6">
@@ -128,8 +126,18 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
             <Separator className="my-4 sm:my-6" />
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button size="default" className="text-sm sm:text-base h-10 sm:h-12 flex-1">
-                Contactar Ahora
+              <Button 
+                size="default" 
+                className="text-sm sm:text-base h-10 sm:h-12 flex-1"
+                asChild
+              >
+                <a
+                  href={getWhatsAppUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Contactar Ahora
+                </a>
               </Button>
             </div>
           </div>
@@ -168,7 +176,7 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
         </div>
       </div>
 
-      {/* Video de la propiedad */}
+      {/* Video */}
       {estate.videoUrl && (
         <div className="mb-6 sm:mb-12">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
@@ -192,24 +200,22 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
       )}
 
       {/* Servicios */}
-      {estate.utilities && (
-        <div className="mb-6 sm:mb-12">
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Servicios</h2>
-          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {(estate.utilities || defaultUtilities).map((utility, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="mr-2 h-2 w-2 sm:h-3 sm:w-3 rounded-full bg-primary flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{utility}</span>
-                </div>
-              ))}
-            </div>
+      <div className="mb-6 sm:mb-12">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Servicios</h2>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {(estate.utilities || defaultUtilities).map((utility, index) => (
+              <div key={index} className="flex items-center">
+                <div className="mr-2 h-2 w-2 sm:h-3 sm:w-3 rounded-full bg-primary flex-shrink-0" />
+                <span className="text-sm sm:text-base">{utility}</span>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Documentos */}
-      {estate.documents && (
+      {estate.documents && estate.documents.length > 0 && (
         <div className="mb-6 sm:mb-12">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Documentos</h2>
           <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border">
@@ -265,8 +271,18 @@ export function EstateDetails({ estate }: IEstateDetailsProps) {
                 </div>
               </div>
               <div className="flex flex-col grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                <Button size="default" className="text-sm sm:text-base h-10 sm:h-12">
-                  Contactar Ahora
+                <Button 
+                  size="default" 
+                  className="text-sm sm:text-base h-10 sm:h-12"
+                  asChild
+                >
+                  <a
+                    href={getWhatsAppUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Contactar Ahora
+                  </a>
                 </Button>
               </div>
             </div>

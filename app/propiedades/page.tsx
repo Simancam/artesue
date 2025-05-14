@@ -5,18 +5,27 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import EstatesFilter, { type EstateFilters } from "@/components/estates/estatesFilter"
 import { EstateCard } from "@/components/estates/estateCard"
+import { EstateGridSkeleton } from "@/components/estates/estateSkeletons"
 import Banner from "@/components/banner"
 import { EstatesService, type IEstate } from "@/services/estatesService"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { EstateDetails } from "@/components/estates/estateDetails"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const Propiedades = () => {
   const [estates, setEstates] = useState<IEstate[]>([])
   const [filteredEstates, setFilteredEstates] = useState<IEstate[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedEstate, setSelectedEstate] = useState<IEstate | null>(null)
-  const [detailsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
 
   useEffect(() => {
     const loadEstates = async () => {
@@ -54,59 +63,27 @@ const Propiedades = () => {
 
   const filterProperties = useCallback((allEstates: IEstate[], filters: EstateFilters) => {
     const hasActiveFilters = Object.values(filters).some((value) => value !== "")
-    if (!hasActiveFilters) {
-      return allEstates
-    }
+    if (!hasActiveFilters) return allEstates
 
     const matchesNumberFilter = (value: number | undefined, filterValue: string, isMin: boolean): boolean => {
-      if (!filterValue || filterValue === "") return true
+      if (!filterValue) return true
       if (value === undefined) return false
-
       const numValue = Number(filterValue)
-      if (isNaN(numValue)) return true
-
-      return isMin ? value >= numValue : value <= numValue
+      return isNaN(numValue) ? true : isMin ? value >= numValue : value <= numValue
     }
 
     return allEstates.filter((estate) => {
       if (filters.transactionType === "rent" && !estate.isForRent) return false
       if (filters.transactionType === "buy" && estate.isForRent) return false
-
-      if (filters.city && filters.city !== "") {
-        if (!estate.city) return false
-        if (estate.city !== filters.city) return false
-      }
-
-      if (filters.propertyType && filters.propertyType !== "") {
-        if (!estate.type) return false
-        if (estate.type !== filters.propertyType) return false
-      }
-
-      if (filters.propertyCode && filters.propertyCode !== "") {
-        if (!estate.propertyCode) return false
-        if (!estate.propertyCode.toLowerCase().includes(filters.propertyCode.toLowerCase())) return false
-      }
-
+      if (filters.city && estate.city !== filters.city) return false
+      if (filters.propertyType && estate.type !== filters.propertyType) return false
+      if (filters.propertyCode && !estate.propertyCode?.toLowerCase().includes(filters.propertyCode.toLowerCase())) return false
       if (!matchesNumberFilter(estate.area, filters.minArea, true)) return false
       if (!matchesNumberFilter(estate.area, filters.maxArea, false)) return false
-
-      if (filters.bedrooms && filters.bedrooms !== "") {
-        const bedroomsValue = Number.parseInt(filters.bedrooms)
-        if (!isNaN(bedroomsValue) && estate.bedrooms !== bedroomsValue) {
-          return false
-        }
-      }
-
-      if (filters.bathrooms && filters.bathrooms !== "") {
-        const bathroomsValue = Number.parseInt(filters.bathrooms)
-        if (!isNaN(bathroomsValue) && estate.bathrooms !== bathroomsValue) {
-          return false
-        }
-      }
-
+      if (filters.bedrooms && estate.bedrooms !== Number(filters.bedrooms)) return false
+      if (filters.bathrooms && estate.bathrooms !== Number(filters.bathrooms)) return false
       if (!matchesNumberFilter(estate.price, filters.minPrice, true)) return false
       if (!matchesNumberFilter(estate.price, filters.maxPrice, false)) return false
-
       return true
     })
   }, [])
@@ -114,10 +91,10 @@ const Propiedades = () => {
   const handleFilterChange = useCallback(
     (filters: EstateFilters) => {
       setLoading(true)
-
       try {
         const filtered = filterProperties(estates, filters)
         setFilteredEstates(filtered)
+        setCurrentPage(1)
       } catch {
         setError("Error al aplicar filtros. Mostrando todas las propiedades.")
         setFilteredEstates(estates)
@@ -125,12 +102,48 @@ const Propiedades = () => {
         setLoading(false)
       }
     },
-    [estates, filterProperties],
+    [estates, filterProperties]
   )
 
-  const closeDetails = useCallback(() => {
-    setSelectedEstate(null)
-  }, [])
+  const totalPages = Math.ceil(filteredEstates.length / itemsPerPage)
+
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return filteredEstates.slice(startIndex, startIndex + itemsPerPage)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const getPageNumbers = () => {
+    const pageNumbers = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i)
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pageNumbers.push(i)
+        pageNumbers.push(null)
+        pageNumbers.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1)
+        pageNumbers.push(null)
+        for (let i = totalPages - 3; i <= totalPages; i++) pageNumbers.push(i)
+      } else {
+        pageNumbers.push(1)
+        pageNumbers.push(null)
+        pageNumbers.push(currentPage - 1)
+        pageNumbers.push(currentPage)
+        pageNumbers.push(currentPage + 1)
+        pageNumbers.push(null)
+        pageNumbers.push(totalPages)
+      }
+    }
+    return pageNumbers
+  }
 
   return (
     <>
@@ -178,15 +191,66 @@ const Propiedades = () => {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
+            <EstateGridSkeleton count={6} />
           ) : filteredEstates.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredEstates.map((estate) => (
-                <EstateCard key={estate.id} estate={estate}/>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {getCurrentPageItems().map((estate) => (
+                  <EstateCard key={estate.id} estate={estate} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage > 1) handlePageChange(currentPage - 1)
+                          }}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+
+                      {getPageNumbers().map((pageNumber, index) =>
+                        pageNumber === null ? (
+                          <PaginationItem key={`ellipsis-${index}`}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={`page-${pageNumber}`}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handlePageChange(pageNumber as number)
+                              }}
+                              isActive={currentPage === pageNumber}
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage < totalPages) handlePageChange(currentPage + 1)
+                          }}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20">
               <h3 className="text-xl font-medium text-gray-500">
@@ -197,22 +261,6 @@ const Propiedades = () => {
           )}
         </div>
       </section>
-
-      <Dialog open={!!selectedEstate} onOpenChange={(open) => !open && closeDetails()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogTitle className="text-xl font-bold">
-            {detailsLoading ? "Cargando detalles..." : "Detalles de la Propiedad"}
-          </DialogTitle>
-          {detailsLoading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : selectedEstate ? (
-            <EstateDetails estate={selectedEstate} />
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
       <Footer />
     </>
   )

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { EstateDetails } from "@/components/estates/estateDetails"
+import { EstateDetailsSkeleton } from "@/components/estates/estateSkeletons"
 import type { IEstate } from "@/services/estatesService"
-import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -26,38 +26,21 @@ export default function EstateDetailPage() {
           throw new Error("La URL base de la API no está configurada")
         }
 
-        const timestamp = new Date().getTime()
-        const url = `${apiBaseUrl}/estates/${estateId}?t=${timestamp}`
-
-        const response = await fetch(url, {
+        const response = await fetch(`${apiBaseUrl}/estates/${estateId}`, {
           method: "GET",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
           },
-          cache: "no-store",
+          cache: "no-store"
         })
 
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
         }
 
-        const responseText = await response.text()
-        let data
-        try {
-          data = JSON.parse(responseText)
-        } catch {
-          throw new Error("Error al procesar la respuesta del servidor")
-        }
-
-        if (!data) {
-          throw new Error("No se recibieron datos de la API")
-        }
-
-        const estateData = data.data || data.estate || data.property || data
+        const data = await response.json()
+        const estateData = data.data || data
 
         const processedEstate: IEstate = {
           id: estateData.id || estateId,
@@ -89,9 +72,9 @@ export default function EstateDetailPage() {
         console.error("Error fetching estate details:", err)
         setError(
           `Error: ${
-            typeof err === "object" && err !== null && "message" in err
-              ? (err as { message?: string }).message
-              : "No se pudo cargar los detalles de la propiedad"
+            err instanceof Error 
+            ? err.message 
+            : "No se pudo cargar los detalles de la propiedad"
           }`
         )
       } finally {
@@ -108,9 +91,7 @@ export default function EstateDetailPage() {
     return (
       <>
         <div className="container mx-auto px-4 py-8 sm:py-12">
-          <div className="flex justify-center items-center min-h-[300px] sm:min-h-[400px]">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-gray-900"></div>
-          </div>
+          <EstateDetailsSkeleton />
         </div>
         <Footer />
       </>

@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { EstateCarousel } from "./estatesCarousel"
 import { EstatesService, type IEstate } from "@/services/estatesService"
 import Link from "next/link"
+import { EstateGridSkeleton } from "./estateSkeletons"
 
 /**
  * Component that displays a grid of estate cards
@@ -101,11 +102,8 @@ export function EstateGrid() {
   }, [])
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    )
+    // Usar el componente de esqueleto durante la carga
+    return <EstateGridSkeleton count={6} />
   }
 
   if (error) {
@@ -127,7 +125,6 @@ export function EstateGrid() {
 
 interface IEstateCardProps {
   estate: IEstate
-  // Remove onClick since it's not being used
 }
 
 /**
