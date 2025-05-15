@@ -58,16 +58,16 @@ async function handleResponse<T>(res: Response): Promise<T> {
  */
 export interface EstateFilterParams {
   transactionType?: string; // e.g., 'buy', 'rent'
-  isForRent?: boolean;      // Derived in frontend. Backend can use this or transactionType.
+  isForRent?: boolean; // Derived in frontend. Backend can use this or transactionType.
   city?: string;
   minArea?: number;
   maxArea?: number;
-  propertyType?: string;    // e.g., 'Comercial', 'Residencial'. Maps to 'type' in your backend example.
+  propertyType?: string; // e.g., 'Comercial', 'Residencial'. Maps to 'type' in your backend example.
   minPrice?: number;
   maxPrice?: number;
-  bedrooms?: number;        // Exact number of bedrooms
-  bathrooms?: number;       // Exact number of bathrooms
-  propertyCode?: string;    // Maps to 'code' in your backend example.
+  bedrooms?: number; // Exact number of bedrooms
+  bathrooms?: number; // Exact number of bathrooms
+  propertyCode?: string; // Maps to 'code' in your backend example.
 }
 
 export class EstatesService {
@@ -89,18 +89,21 @@ export class EstatesService {
    * @param id The ID of the estate to fetch.
    */
   static async getEstateById(id: string): Promise<IEstate> {
-    if (!API_BASE_URL) {
-      throw new Error("NEXT_PUBLIC_API_BASE_URL no está definida");
-    }
     const res = await fetch(`${API_BASE_URL}/estates/${id}`);
-    return handleResponse<IEstate>(res);
+    const response = await handleResponse<any>(res);
+    // Si viene envuelto en { data: ... }
+    if (response && response.data) return response.data;
+    // Si viene directo el objeto
+    return response;
   }
 
   /**
    * Creates a new estate.
    * @param estateData Data for the new estate.
    */
-  static async createEstate(estateData: Omit<IEstate, "id" | "createdAt" | "updatedAt">): Promise<IEstate> {
+  static async createEstate(
+    estateData: Omit<IEstate, "id" | "createdAt" | "updatedAt">
+  ): Promise<IEstate> {
     if (!API_BASE_URL) {
       throw new Error("NEXT_PUBLIC_API_BASE_URL no está definida");
     }
@@ -117,7 +120,10 @@ export class EstatesService {
    * @param id The ID of the estate to update.
    * @param estateData Partial data to update the estate with.
    */
-  static async updateEstate(id: string, estateData: Partial<IEstate>): Promise<IEstate> {
+  static async updateEstate(
+    id: string,
+    estateData: Partial<IEstate>
+  ): Promise<IEstate> {
     if (!API_BASE_URL) {
       throw new Error("NEXT_PUBLIC_API_BASE_URL no está definida");
     }
@@ -146,7 +152,9 @@ export class EstatesService {
       try {
         const errorBody = await res.json();
         if (errorBody.message) errorMsg = errorBody.message;
-      } catch (e) { /* Ignore if body isn't json */ }
+      } catch (e) {
+        /* Ignore if body isn't json */
+      }
       throw new Error(errorMsg);
     }
     // No content expected on successful delete
@@ -162,8 +170,10 @@ export class EstatesService {
     if (!API_BASE_URL) {
       throw new Error("NEXT_PUBLIC_API_BASE_URL no está definida");
     }
-    const query = new URLSearchParams(filters as Record<string, string>).toString()
-    console.log("Query de filtros enviado a la API:", query)
+    const query = new URLSearchParams(
+      filters as Record<string, string>
+    ).toString();
+    console.log("Query de filtros enviado a la API:", query);
 
     const params = new URLSearchParams();
 
@@ -176,7 +186,7 @@ export class EstatesService {
       // For strings, also ensure it's not an empty or whitespace-only string.
       // Numbers (like 0) and booleans (like false) will be converted to strings and appended.
       if (value !== undefined && value !== null) {
-        if (typeof value === 'string' && value.trim() === "") {
+        if (typeof value === "string" && value.trim() === "") {
           // Do not append empty or whitespace-only strings
         } else {
           params.append(key, String(value)); // Converts numbers and booleans to their string representations
@@ -188,14 +198,15 @@ export class EstatesService {
     // Construct the URL. If queryString is empty, no '?' is added.
     // This assumes your backend filters estates via query parameters on the /estates endpoint.
     // If you have a specific endpoint like /estates/filter, adjust the URL accordingly.
-    const fetchURL = `${API_BASE_URL}/estates${queryString ? `?${queryString}` : ''}`;
+    const fetchURL = `${API_BASE_URL}/estates${
+      queryString ? `?${queryString}` : ""
+    }`;
 
     // You can log the URL for debugging purposes if needed:
     // console.log("Fetching filtered estates from URL:", fetchURL);
 
     const res = await fetch(fetchURL);
-    
-    
+
     // This assumes your backend returns a direct array of IEstate objects when filtering.
     // If your backend wraps the filtered results in a 'data' object (like getAllEstates might),
     // you would use:

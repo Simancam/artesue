@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { EstateDetails } from "@/components/estates/estateDetails"
 import { EstateDetailsSkeleton } from "@/components/estates/estateSkeletons"
 import type { IEstate } from "@/services/estatesService"
+import { EstatesService } from "@/services/estatesService"
 import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -21,53 +22,8 @@ export default function EstateDetailPage() {
     const fetchEstateDetails = async () => {
       try {
         setLoading(true)
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-        if (!apiBaseUrl) {
-          throw new Error("La URL base de la API no está configurada")
-        }
-
-        const response = await fetch(`${apiBaseUrl}/estates/${estateId}`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          cache: "no-store"
-        })
-
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
-        }
-
-        const data = await response.json()
-        const estateData = data.data || data
-
-        const processedEstate: IEstate = {
-          id: estateData.id || estateId,
-          title: estateData.title || "Sin título",
-          location: estateData.location || "Ubicación no disponible",
-          type: estateData.type || "No especificado",
-          price: typeof estateData.price === "number" ? estateData.price : 0,
-          isForRent: typeof estateData.isForRent === "boolean" ? estateData.isForRent : false,
-          area: typeof estateData.area === "number" ? estateData.area : 0,
-          features: Array.isArray(estateData.features) ? estateData.features : [],
-          bedrooms: typeof estateData.bedrooms === "number" ? estateData.bedrooms : 0,
-          bathrooms: typeof estateData.bathrooms === "number" ? estateData.bathrooms : 0,
-          propertyCode: estateData.propertyCode || "N/A",
-          description: estateData.description || "",
-          zoning: estateData.zoning || "Residencial",
-          image: estateData.image || null,
-          images: Array.isArray(estateData.images) ? estateData.images : [],
-          videoUrl: estateData.videoUrl || null,
-          utilities: Array.isArray(estateData.utilities) ? estateData.utilities : null,
-          documents: Array.isArray(estateData.documents) ? estateData.documents : null,
-          agent: estateData.agent || null,
-          createdAt: estateData.createdAt || null,
-          updatedAt: estateData.updatedAt || null,
-          city: estateData.city || null,
-        }
-
-        setEstate(processedEstate)
+        const estateData = await EstatesService.getEstateById(estateId)
+        setEstate(estateData)
       } catch (err: unknown) {
         console.error("Error fetching estate details:", err)
         setError(

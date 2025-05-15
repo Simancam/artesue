@@ -12,7 +12,7 @@ const Footer = () => {
   const developerUrl = "https://simanca.com";
 
   return (
-    <footer className="bg-gray-100 py-6">
+    <footer style={{ backgroundColor: '#0A1F44' }} className="py-6">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-center space-y-4 md:flex-row md:justify-between md:space-y-0">
           <div className="flex flex-col items-center text-center md:flex-row md:items-center md:text-left">
@@ -23,12 +23,12 @@ const Footer = () => {
               height={logoHeight}
               className="h-6 mb-2 md:mb-0 md:mr-2"
             />
-            <span className="text-lg font-medium text-gray-800">
+            <span className="text-lg font-medium text-white">
               {companyName}
             </span>
           </div>
 
-          <div className="text-center text-sm text-gray-600 md:text-right">
+          <div className="text-center text-sm text-white md:text-right">
             <p>
               &copy; {currentYear} {companyName}. Todos los derechos reservados.
             </p>
@@ -38,7 +38,7 @@ const Footer = () => {
                 href={developerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-gray-800 transition-transform duration-300 hover:scale-110"
+                className="font-medium text-white transition-transform duration-300 hover:scale-110 text-decoration-line: underline"
               >
                 Simanca
               </Link>
