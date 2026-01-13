@@ -152,12 +152,6 @@ export function EstateDetails({ estate }: IEstateDetailsComponentProps) {
             {estate.description ||
               "Excelente lote ubicado en una zona estratégica con gran potencial de desarrollo. Ideal para proyectos residenciales o comerciales. Cuenta con todos los servicios básicos y excelente accesibilidad."}
           </p>
-          {estate.createdAt && (
-            <div className="flex items-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
-              <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Publicado: {estate.createdAt}</span>
-            </div>
-          )}
         </div>
       </div>
 

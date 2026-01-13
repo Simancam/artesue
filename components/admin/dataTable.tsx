@@ -3,15 +3,14 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, CheckCircle, AlertCircle, ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { Plus, ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { PropertyForm } from "./propertyForm"
+import { PropertyFormUnified } from "./propertyForm"
 import type { PropertyFormValues } from "@/lib/schema/property-schema"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -50,33 +49,6 @@ const TableActionButton = ({
   </button>
 )
 
-const StatusAlert = ({
-  alert,
-}: {
-  alert: { type: "success" | "error"; visible: boolean; message: string }
-}) =>
-  alert.visible && (
-    <div className="fixed bottom-6 left-6 z-50 animate-in fade-in slide-in-from-bottom-10 duration-300">
-      <Alert
-        className={`shadow-lg max-w-md ${
-          alert.type === "success" ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
-        }`}
-      >
-        {alert.type === "success" ? (
-          <CheckCircle className="h-4 w-4 text-green-500" />
-        ) : (
-          <AlertCircle className="h-4 w-4 text-red-500" />
-        )}
-        <AlertTitle className={alert.type === "success" ? "text-green-700" : "text-red-700"}>
-          {alert.type === "success" ? "Propiedad añadida" : "Error"}
-        </AlertTitle>
-        <AlertDescription className={alert.type === "success" ? "text-green-600" : "text-red-600"}>
-          {alert.message}
-        </AlertDescription>
-      </Alert>
-    </div>
-  )
-
 export type EnhancedColumn<T> = ColumnDef<T>
 
 export interface EnhancedDataTableProps<T> {
@@ -106,12 +78,6 @@ export function EnhancedDataTable<T>({
 }: EnhancedDataTableProps<T>) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [alert, setAlert] = useState<{
-    type: "success" | "error"
-    visible: boolean
-    message: string
-  }>({ type: "success", visible: false, message: "" })
-
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -147,19 +113,22 @@ export function EnhancedDataTable<T>({
     else setOpen(true)
   }
 
-  const showTemporaryAlert = (type: "success" | "error", message: string) => {
-    setAlert({ type, visible: true, message })
-    setTimeout(() => setAlert((prev) => ({ ...prev, visible: false })), 3000)
-  }
-
   const handleSuccess = (data: PropertyFormValues) => {
-    showTemporaryAlert("success", "La propiedad ha sido añadida correctamente.")
+    toast.success("¡Propiedad añadida!", {
+      description: `La propiedad "${data.title}" se ha añadido correctamente.`,
+    })
     setOpen(false)
     if (onPropertyAdded) onPropertyAdded(data)
   }
 
   const handleError = () => {
-    showTemporaryAlert("error", "Ha ocurrido un error al añadir la propiedad. Inténtalo de nuevo.")
+    toast.error("Error al añadir propiedad", {
+      description: "Ha ocurrido un error al añadir la propiedad. Por favor, intenta de nuevo.",
+    })
+  }
+
+  const handleFormClose = () => {
+    setOpen(false)
   }
 
   return (
@@ -169,7 +138,6 @@ export function EnhancedDataTable<T>({
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           {buttonText && <TableActionButton onClick={handleLegacyButtonClick}>{buttonText}</TableActionButton>}
         </div>
-
         <div className="bg-white p-4">
           <div className="flex items-center justify-between gap-4 mb-4">
             {filterColumn && (
@@ -180,11 +148,10 @@ export function EnhancedDataTable<T>({
                 className="max-w-sm"
               />
             )}
-
             <div className="flex gap-2 ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-1">
+                  <Button variant="outline" className="flex items-center gap-1 bg-transparent">
                     Columnas <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -208,7 +175,6 @@ export function EnhancedDataTable<T>({
               </DropdownMenu>
             </div>
           </div>
-
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -247,7 +213,6 @@ export function EnhancedDataTable<T>({
               </TableBody>
             </Table>
           </div>
-
           <div className="flex items-center justify-between py-4">
             <div className="flex-1 text-sm text-gray-500">
               {table.getFilteredSelectedRowModel().rows.length > 0 && (
@@ -257,7 +222,6 @@ export function EnhancedDataTable<T>({
                 </span>
               )}
             </div>
-
             <div className="flex items-center space-x-6">
               <div className="text-sm text-gray-500">
                 Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
@@ -287,28 +251,26 @@ export function EnhancedDataTable<T>({
         </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[900px] md:max-w-[1600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Añadir Propiedad</DialogTitle>
-            <DialogDescription>Complete el formulario para añadir una nueva propiedad al sistema.</DialogDescription>
-          </DialogHeader>
-          <PropertyForm onSuccess={handleSuccess} onError={handleError} />
-        </DialogContent>
-      </Dialog>
-
-      <StatusAlert alert={alert} />
+      {/* Formulario Unificado con Dialog Custom Integrado */}
+      <PropertyFormUnified
+        isOpen={open}
+        onClose={handleFormClose}
+        title="Añadir Propiedad"
+        onSuccess={handleSuccess}
+        onError={handleError}
+      />
     </>
   )
 }
+
 export function createColumn<T>(
   id: string,
   header: string,
-  accessorFn: (row: T) => unknown, // ✅ Cambiado 'any' por 'unknown'
+  accessorFn: (row: T) => unknown,
   options?: {
     sortable?: boolean
     align?: "left" | "center" | "right"
-    cell?: (value: ReturnType<typeof accessorFn>, row: T) => React.ReactNode // ✅ Tipado dinámico del valor
+    cell?: (value: ReturnType<typeof accessorFn>, row: T) => React.ReactNode
     enableHiding?: boolean
   },
 ): EnhancedColumn<T> {
@@ -318,7 +280,6 @@ export function createColumn<T>(
     enableHiding: true,
     cell: undefined,
   }
-
   const mergedOptions = { ...defaultOptions, ...options }
 
   const column: EnhancedColumn<T> = {
@@ -345,7 +306,7 @@ export function createColumn<T>(
   if (mergedOptions.cell) {
     column.cell = ({ row }) => {
       const value = accessorFn(row.original)
-      return mergedOptions.cell!(value as ReturnType<typeof accessorFn>, row.original) // ✅ cast explícito si es necesario
+      return mergedOptions.cell!(value as ReturnType<typeof accessorFn>, row.original)
     }
   }
 
@@ -378,8 +339,6 @@ export function createSelectColumn<T>(): EnhancedColumn<T> {
   }
 }
 
-// Asegúrate de que la función createActionsColumn pase correctamente los datos de la fila al hacer clic en "Editar"
-
 export function createActionsColumn<T>(
   actions: Array<{
     label: string
@@ -393,7 +352,6 @@ export function createActionsColumn<T>(
     header: "Acciones",
     cell: ({ row }) => {
       const item = row.original
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -407,7 +365,6 @@ export function createActionsColumn<T>(
               if (action.isHeader) {
                 return <DropdownMenuLabel key={index}>{action.label}</DropdownMenuLabel>
               }
-
               return (
                 <React.Fragment key={index}>
                   {action.separator && <DropdownMenuSeparator />}

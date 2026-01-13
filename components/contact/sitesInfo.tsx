@@ -6,28 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const sedes = [
   {
-    id: "cdmx",
-    nombre: "Ciudad de México",
-    direccion: "Cra 14 #4A-10",
-    telefono: "+57 300 9278950",
-    correo: "example@gmail.com",
-    coordenadas: "19.4326,-99.1332",
-  },
-  {
-    id: "guadalajara",
-    nombre: "Guadalajara",
-    direccion: "Av. Chapultepec #223",
-    telefono: "+52 33 1234 5678",
-    correo: "guadalajara@example.com",
-    coordenadas: "20.6597,-103.3496",
-  },
-  {
-    id: "monterrey",
-    nombre: "Monterrey",
-    direccion: "Blvd. Antonio L. Rodríguez #3000",
-    telefono: "+52 81 8765 4321",
-    correo: "monterrey@example.com",
-    coordenadas: "25.6866,-100.3161",
+    id: "meta",
+    nombre: "Meta",
+    direccion: "Torres Milenium, Cra. 13 #25-62, Granada, L124",
+    telefono: "+57 311 8391135", 
+    correo: "311 8391135",
+    coordenadas: "3.5515106964227168, -73.71510932431349",
   },
 ]
 

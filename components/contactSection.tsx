@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRef, useState } from 'react';
-import { Mail, Phone, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { sendEmail } from '@/lib/email';
-import { Label } from '@/components/ui/label';
+import { useRef, useState } from "react";
+import { Mail, Phone, MapPin, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { sendEmail } from "@/lib/email";
+import { Label } from "@/components/ui/label";
 
 export const ContactSection = () => {
   const [loading, setLoading] = useState(false);
@@ -26,9 +26,9 @@ export const ContactSection = () => {
     const formData = new FormData(e.currentTarget);
 
     const result = await sendEmail({
-      nombres: formData.get('nombres') as string,
-      correo: formData.get('correo') as string,
-      mensaje: formData.get('mensaje') as string,
+      nombres: formData.get("nombres") as string,
+      correo: formData.get("correo") as string,
+      mensaje: formData.get("mensaje") as string,
     });
 
     setIsSuccess(result);
@@ -42,23 +42,25 @@ export const ContactSection = () => {
       <section className="bg-amber-400 text-white rounded-t-3xl py-16 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-2xl md:text-3xl font-semibold mb-4">Contáctate con nosotros</h2>
-            <p className="text-white/90 mb-8 max-w-sm">
+            <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+              Contáctate con nosotros
+            </h2>
+            {/* <p className="text-white/90 mb-8 max-w-sm">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            </p>
+            </p> */}
 
             <ul className="space-y-5 text-white/90 text-sm">
               <li className="flex items-center gap-3">
                 <Mail size={20} />
-                contacto@gmail.com
+                inverartesue20@gmail.com
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={20} />
-                +57 300 649 5480
+                +57 311 8391135
               </li>
               <li className="flex items-center gap-3">
                 <MapPin size={20} />
-                Cra 10 # 84A - 05
+                Torres Milenium, Cra. 13 #25-62, L124, Granada, Meta
               </li>
               <li className="flex items-center gap-3">
                 <Clock size={20} />
@@ -70,29 +72,38 @@ export const ContactSection = () => {
           <div className="bg-white text-gray-800 rounded-2xl shadow-lg p-6 w-full max-w-md mx-auto">
             <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <Label htmlFor="correo" className="text-sm font-medium text-gray-700 block mb-1">
+                <Label
+                  htmlFor="correo"
+                  className="text-sm font-medium text-gray-700 block mb-1"
+                >
                   Correo <span className="text-red-500">*</span>
                 </Label>
-                <Input name="correo" id="email" type="email" required />
+                <Input name="correo" id="correo" type="email" required />
               </div>
               <div>
-                <Label htmlFor="nombres" className="text-sm font-medium text-gray-700 block mb-1">
+                <Label
+                  htmlFor="nombres"
+                  className="text-sm font-medium text-gray-700 block mb-1"
+                >
                   Nombre <span className="text-red-500">*</span>
                 </Label>
-                <Input name="nombres" id="name" type="text" required />
+                <Input name="nombres" id="nombres" type="text" required />
               </div>
               <div>
-                <Label htmlFor="mensaje" className="text-sm font-medium text-gray-700 block mb-1">
+                <Label
+                  htmlFor="mensaje"
+                  className="text-sm font-medium text-gray-700 block mb-1"
+                >
                   Mensaje <span className="text-red-500">*</span>
                 </Label>
-                <Textarea name="mensaje" id="message" rows={4} required />
+                <Textarea name="mensaje" id="mensaje" rows={4} required />
               </div>
               <Button
                 type="submit"
                 disabled={loading}
                 className="bg-amber-400 hover:bg-amber-500 text-white w-full"
               >
-                {loading ? 'Enviando...' : 'Enviar'}
+                {loading ? "Enviando..." : "Enviar"}
               </Button>
             </form>
           </div>
@@ -104,7 +115,9 @@ export const ContactSection = () => {
         <div
           ref={alertRef}
           className={`fixed bottom-4 right-4 z-50 w-80 md:w-96 animate-slide-in-right p-4 rounded-lg shadow-lg border ${
-            isSuccess ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+            isSuccess
+              ? "bg-green-50 border-green-500"
+              : "bg-red-50 border-red-500"
           }`}
         >
           <div className="flex items-start gap-3">
@@ -118,19 +131,19 @@ export const ContactSection = () => {
             <div className="flex-1">
               <h3
                 className={`text-sm font-semibold ${
-                  isSuccess ? 'text-green-800' : 'text-red-800'
+                  isSuccess ? "text-green-800" : "text-red-800"
                 }`}
               >
-                {isSuccess ? '¡Gracias por contactarnos!' : 'Error'}
+                {isSuccess ? "¡Gracias por contactarnos!" : "Error"}
               </h3>
               <p
                 className={`mt-1 text-sm leading-normal ${
-                  isSuccess ? 'text-green-700' : 'text-red-700'
+                  isSuccess ? "text-green-700" : "text-red-700"
                 }`}
               >
                 {isSuccess
-                  ? 'Hemos recibido tu mensaje. Nos pondremos en contacto contigo lo antes posible.'
-                  : 'Ha ocurrido un error al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde.'}
+                  ? "Hemos recibido tu mensaje. Nos pondremos en contacto contigo lo antes posible."
+                  : "Ha ocurrido un error al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde."}
               </p>
             </div>
           </div>

@@ -1,13 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  EnhancedDataTable,
-  createColumn,
-  createSelectColumn,
-  createActionsColumn,
-} from "@/components/dashboard/dataTable"
-import { StatCard } from "@/components/dashboard/statCard"
+import { EnhancedDataTable, createColumn, createSelectColumn, createActionsColumn } from "@/components/admin/dataTable"
+import { StatCard } from "@/components/admin/statCard"
 import { Home, Tags, Building, AlertCircle, Plus, Trash2 } from "lucide-react"
 import { EstatesService, type IEstate } from "@/services/estatesService"
 import type { PropertyFormValues } from "@/lib/schema/property-schema"
@@ -21,14 +16,15 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { PropertyForm } from "@/components/dashboard/propertyForm"
+import { PropertyFormUnified } from "@/components/admin/propertyForm"
+import { toast } from "sonner"
 
 type FirebaseDataStructure = {
-  documents?: unknown;
-  estates?: unknown;
-  items?: unknown;
-  data?: unknown;
-};
+  documents?: unknown
+  estates?: unknown
+  items?: unknown
+  data?: unknown
+}
 
 export default function DashboardPage() {
   const [estates, setEstates] = useState<IEstate[]>([])
@@ -38,11 +34,6 @@ export default function DashboardPage() {
   const [editingEstate, setEditingEstate] = useState<IEstate | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [estateToDelete, setEstateToDelete] = useState<IEstate | null>(null)
-  const [alert, setAlert] = useState<{
-    type: "success" | "error"
-    visible: boolean
-    message: string
-  }>({ type: "success", visible: false, message: "" })
 
   useEffect(() => {
     fetchEstates()
@@ -52,14 +43,11 @@ export default function DashboardPage() {
     try {
       setIsLoading(true)
       const data = await EstatesService.getAllEstates()
-
       console.log("Datos originales de Firebase:", data)
-
       let estatesArray: IEstate[] = []
 
       if (data && typeof data === "object") {
-        const firebaseData = data as FirebaseDataStructure;
-
+        const firebaseData = data as FirebaseDataStructure
         if (Array.isArray(data)) {
           estatesArray = data
         } else {
@@ -97,7 +85,6 @@ export default function DashboardPage() {
       }
 
       console.log("Array transformado:", estatesArray)
-
       const validEstates = estatesArray.map((estate) => ({
         ...estate,
         isForRent: typeof estate.isForRent === "boolean" ? estate.isForRent : false,
@@ -107,7 +94,6 @@ export default function DashboardPage() {
       }))
 
       setEstates(validEstates)
-
       if (validEstates.length === 0) {
         setError("No se encontraron propiedades en la base de datos.")
       } else {
@@ -117,6 +103,9 @@ export default function DashboardPage() {
       console.error("Error al obtener propiedades:", err)
       setEstates([])
       setError("No se pudieron cargar las propiedades. Por favor, intenta de nuevo más tarde.")
+      toast.error("Error al cargar propiedades", {
+        description: "No se pudieron cargar las propiedades. Por favor, intenta de nuevo más tarde.",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -125,11 +114,6 @@ export default function DashboardPage() {
   const totalProperties = estates.length
   const propertiesForRent = estates.filter((p) => p.isForRent).length
   const propertiesForSale = estates.filter((p) => !p.isForRent).length
-
-  const showTemporaryAlert = (type: "success" | "error", message: string) => {
-    setAlert({ type, visible: true, message })
-    setTimeout(() => setAlert((prev) => ({ ...prev, visible: false })), 3000)
-  }
 
   const handlePropertyAdded = async (property: PropertyFormValues) => {
     try {
@@ -148,45 +132,48 @@ export default function DashboardPage() {
       console.log("Nueva propiedad a añadir:", newProperty)
       const createdEstate = await EstatesService.createEstate(newProperty)
       setEstates((prev) => [...prev, createdEstate])
-      setFormOpen(false)
-      showTemporaryAlert("success", "Propiedad añadida correctamente")
+
+      toast.success("¡Propiedad añadida!", {
+        description: `La propiedad "${property.title}" se ha añadido correctamente.`,
+      })
     } catch (error) {
       console.error("Error al añadir propiedad:", error)
-      showTemporaryAlert("error", "Error al añadir la propiedad")
+      toast.error("Error al añadir propiedad", {
+        description: "No se pudo añadir la propiedad. Por favor, intenta de nuevo.",
+      })
     }
   }
 
   const handlePropertyUpdated = async (property: PropertyFormValues) => {
-  if (!editingEstate) return
+    if (!editingEstate) return
+    try {
+      // 1. Actualizar en el backend
+      const updatedEstate = await EstatesService.updateEstate(editingEstate.id, {
+        ...property,
+        price: Number(property.price),
+        isForRent: Boolean(property.isForRent),
+        area: Number(property.area),
+        // Convertir todos los campos necesarios
+        bedrooms: Number(property.bedrooms || 0),
+        bathrooms: Number(property.bathrooms || 0),
+        features: Array.isArray(property.features) ? property.features : [],
+        utilities: Array.isArray(property.utilities) ? property.utilities : [],
+        images: Array.isArray(property.images) ? property.images : [],
+      })
 
-  try {
-    // 1. Actualizar en el backend
-    const updatedEstate = await EstatesService.updateEstate(editingEstate.id, {
-      ...property,
-      price: Number(property.price),
-      isForRent: Boolean(property.isForRent),
-      area: Number(property.area),
-      // Convertir todos los campos necesarios
-      bedrooms: Number(property.bedrooms || 0),
-      bathrooms: Number(property.bathrooms || 0),
-      features: Array.isArray(property.features) ? property.features : [],
-      utilities: Array.isArray(property.utilities) ? property.utilities : [],
-      images: Array.isArray(property.images) ? property.images : [],
-    });
+      // 2. Actualizar el estado local con la respuesta del servidor
+      setEstates((prev) => prev.map((estate) => (estate.id === editingEstate.id ? updatedEstate : estate)))
 
-    // 2. Actualizar el estado local con la respuesta del servidor
-    setEstates(prev => prev.map(estate => 
-      estate.id === editingEstate.id ? updatedEstate : estate
-    ));
-
-    setFormOpen(false);
-    setEditingEstate(null);
-    showTemporaryAlert("success", "Propiedad actualizada correctamente");
-  } catch (error) {
-    console.error("Error al actualizar propiedad:", error);
-    showTemporaryAlert("error", "Error al actualizar la propiedad");
+      toast.success("¡Propiedad actualizada!", {
+        description: `La propiedad "${property.title}" se ha actualizado correctamente.`,
+      })
+    } catch (error) {
+      console.error("Error al actualizar propiedad:", error)
+      toast.error("Error al actualizar propiedad", {
+        description: "No se pudo actualizar la propiedad. Por favor, intenta de nuevo.",
+      })
+    }
   }
-}
 
   function handleEditClick(estate: IEstate) {
     try {
@@ -205,12 +192,13 @@ export default function DashboardPage() {
         videoUrl: estate.videoUrl || "",
         city: estate.city || "",
       }
-
       setEditingEstate(completeEstate)
       setFormOpen(true)
     } catch (error) {
       console.error(`Error al obtener propiedad para editar:`, error)
-      showTemporaryAlert("error", "Error al cargar los datos de la propiedad")
+      toast.error("Error al cargar propiedad", {
+        description: "No se pudieron cargar los datos de la propiedad para editar.",
+      })
     }
   }
 
@@ -221,22 +209,33 @@ export default function DashboardPage() {
 
   const handleDeleteConfirm = async () => {
     if (!estateToDelete) return
-
     try {
       await EstatesService.deleteEstate(estateToDelete.id)
       setEstates((prev) => prev.filter((e) => e.id !== estateToDelete.id))
       setDeleteDialogOpen(false)
+
+      toast.success("¡Propiedad eliminada!", {
+        description: `La propiedad "${estateToDelete.title}" se ha eliminado correctamente.`,
+      })
+
       setEstateToDelete(null)
-      showTemporaryAlert("success", "Propiedad eliminada correctamente")
     } catch (error) {
       console.error(`Error al eliminar propiedad:`, error)
-      showTemporaryAlert("error", "Error al eliminar la propiedad")
+      toast.error("Error al eliminar propiedad", {
+        description: "No se pudo eliminar la propiedad. Por favor, intenta de nuevo.",
+      })
     }
   }
 
   const handleFormClose = () => {
     setFormOpen(false)
     setEditingEstate(null)
+  }
+
+  const handleFormError = () => {
+    toast.error("Error en el formulario", {
+      description: "Ha ocurrido un error al procesar el formulario. Por favor, revisa los datos e intenta de nuevo.",
+    })
   }
 
   const columns = [
@@ -279,29 +278,12 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Panel de Control</h1>
-
+    <div className="p-6 w-full mx-auto">
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      )}
-
-      {alert.visible && (
-        <div className="fixed bottom-6 left-6 z-50 animate-in fade-in slide-in-from-bottom-10 duration-300">
-          <Alert
-            className={`shadow-lg max-w-md ${
-              alert.type === "success" ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
-            }`}
-          >
-            <AlertCircle className={`h-4 w-4 ${alert.type === "success" ? "text-green-500" : "text-red-500"}`} />
-            <AlertDescription className={alert.type === "success" ? "text-green-600" : "text-red-600"}>
-              {alert.message}
-            </AlertDescription>
-          </Alert>
-        </div>
       )}
 
       {isLoading ? (
@@ -323,7 +305,6 @@ export default function DashboardPage() {
             <StatCard title="Propiedades en Arriendo" value={propertiesForRent} icon={<Home className="w-6 h-6" />} />
             <StatCard title="Propiedades en Venta" value={propertiesForSale} icon={<Tags className="w-6 h-6" />} />
           </div>
-
           {estates.length > 0 ? (
             <EnhancedDataTable<IEstate>
               data={estates}
@@ -359,31 +340,24 @@ export default function DashboardPage() {
         </>
       )}
 
-      <Dialog open={formOpen} onOpenChange={handleFormClose}>
-        <DialogContent className="sm:max-w-[900px] md:max-w-[1600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingEstate ? "Editar Propiedad" : "Añadir Propiedad"}</DialogTitle>
-            <DialogDescription>
-              {editingEstate
-                ? "Modifique los datos de la propiedad y guarde los cambios."
-                : "Complete el formulario para añadir una nueva propiedad al sistema."}
-            </DialogDescription>
-          </DialogHeader>
-          <PropertyForm
-            initialData={editingEstate || undefined}
-            onSuccess={editingEstate ? handlePropertyUpdated : handlePropertyAdded}
-            onError={() => showTemporaryAlert("error", "Ha ocurrido un error. Inténtalo de nuevo.")}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Formulario Unificado con Dialog Custom Integrado */}
+      <PropertyFormUnified
+        isOpen={formOpen}
+        onClose={handleFormClose}
+        title={editingEstate ? "Editar Propiedad" : "Añadir Propiedad"}
+        initialData={editingEstate || undefined}
+        onSuccess={editingEstate ? handlePropertyUpdated : handlePropertyAdded}
+        onError={handleFormError}
+      />
 
+      {/* Dialog de Confirmación de Eliminación */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que deseas eliminar la propiedad &quot;{estateToDelete?.title}&quot;? Esta acción no se puede
-              deshacer.
+              ¿Estás seguro de que deseas eliminar la propiedad &quot;{estateToDelete?.title}&quot;? Esta acción no se
+              puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex items-center justify-end space-x-2 pt-4">

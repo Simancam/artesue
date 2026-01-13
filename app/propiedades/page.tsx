@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useState, useEffect, useCallback } from "react"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
@@ -148,13 +149,26 @@ const Propiedades = () => {
   return (
     <>
       <Navbar />
-      <Banner imageUrl="/banner.jpg" height="50vh">
-        <div className="text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-            Explora Nuestros Lotes Disponibles
-          </h1>
-          <p className="mt-4 text-lg text-white drop-shadow-md">Elige el lugar perfecto para tu proyecto</p>
-        </div>
+      <Banner imageUrl="https://cdn.pixabay.com/photo/2021/10/07/15/23/real-estate-6688945_1280.jpg" height="80vh">
+        <div className="flex flex-col items-center justify-center h-full text-center px-4 relative z-10">
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-5xl md:text-7xl lg:text-8xl font-bold text-white drop-shadow-lg"
+            >
+              Explora Nuestros Lotes Disponibles
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="mt-6 text-xl md:text-2xl lg:text-3xl text-white drop-shadow-md max-w-4xl"
+            >
+              Elige el lugar perfecto para tu proyecto
+            </motion.p>
+          </div>
+        
       </Banner>
 
       <div className="container mx-auto px-4 -mt-16 relative z-30">
