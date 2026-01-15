@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { propertyFormSchema, type PropertyFormValues } from "@/lib/schema/property-schema"
 import { X, Plus, MapPin, Home, User } from "lucide-react"
 import type { IEstate } from "@/services/estatesService"
+import Image from "next/image"
 
 // ==================== CONSTANTES ====================
 const PROPERTY_TYPES = ["Comercial", "Residencial", "Industrial", "Agrícola", "Turístico"]
@@ -685,7 +686,7 @@ export function PropertyFormUnified({ onSuccess, onError, initialData, isOpen, o
                       {images.map((image, index) => (
                         <div key={index} className="relative group">
                           <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-blue-200">
-                            <img
+                            <Image
                               src={image || "/placeholder.svg"}
                               alt={`Imagen ${index + 1}`}
                               className="w-full h-full object-cover"

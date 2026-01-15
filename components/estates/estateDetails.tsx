@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, MapPin, Phone, User, Video, Home, Droplets, Tag, Check, Info } from "lucide-react"
+import {  MapPin, Phone, User, Video, Home, Droplets, Tag, Check, Info } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
