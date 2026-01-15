@@ -56,7 +56,7 @@ const Inicio = () => {
             >
               <Link href="/propiedades">
                 <Button className="bg-amber-400 hover:bg-amber-500 text-lg px-8 py-4 h-auto">
-                  Ver Proiedades
+                  Ver Propiedades
                 </Button>
               </Link>
             </motion.div>
