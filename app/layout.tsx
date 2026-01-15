@@ -1,6 +1,9 @@
-// app/layout.tsx o RootLayout.tsx
+// app/layout.tsx
+"use client";
+
 import "./globals.css";
 import { Raleway, Poppins } from "next/font/google";
+import { usePathname } from "next/navigation";
 import WhatsappButton from "@/components/wspButton";
 
 const raleway = Raleway({
@@ -17,15 +20,23 @@ const poppins = Poppins({
   display: "swap",
 });
 
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const whatsappNumber = "573001234567";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const whatsappNumber = "573001234567"; 
+  const isDashboard = pathname.startsWith("/dashboard");
 
   return (
     <html lang="es" className={`${raleway.variable} ${poppins.variable}`}>
       <body className="relative">
         {children}
-        <WhatsappButton phoneNumber={whatsappNumber} />
+        {!isDashboard && (
+          <WhatsappButton phoneNumber={whatsappNumber} />
+        )}
       </body>
     </html>
   );
